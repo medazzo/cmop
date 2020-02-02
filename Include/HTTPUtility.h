@@ -79,8 +79,9 @@ HANDLER_ASTERISK   	= 0x0100, 	/*!< define the Asterisk Handler. */
 }HANDLERSTYPES;
 
  /* LOGGING */
-#define EXPO_LOG_TAG "[EXPO_SERVICES]"
-#ifdef EXPO_SERVICES_ENABLE_LOG
+#define EXPO_LOG_TAG "[CPMOP]"
+
+#ifdef ENABLE_LOG
 	#ifdef ANDROID  /* MODE ANDROID */
 		#include <android/log.h>
 		#define log_error(...)    __android_log_print(ANDROID_LOG_ERROR, EXPO_LOG_TAG,__VA_ARGS__)
@@ -101,28 +102,13 @@ HANDLER_ASTERISK   	= 0x0100, 	/*!< define the Asterisk Handler. */
 	#define log_warning( ...)
 #endif
 
-/* Specific */
-#ifdef CONFIG_EXPOSERVICES /* MODE STB */
-#include <Neptune.h>
-#include <Platinum.h>
-#include "stbtools_scm.h"
-#define APP_USER_AGENT  "Machblue 2.7.2"
-#else   /* MODE other than STB */
 
-#if defined(APPLE_IOS) || defined(__APPLE__)  /* MODE APPLE */
-#include <Platinum/Neptune.h>
-#include <Platinum/Platinum.h>
-#else /*   MODE other's  */
-#include <Neptune.h>
-#include <Platinum.h>
-#endif /* Apple Ios */
-
+#include "Neptune.h"
 #include <stdlib.h>
-#define SCM_MALLOC			malloc				/*!< use STB MAcro to malloc memory  */
-#define SCM_REALLOC 		realloc				/*!< use STB MAcro to realloc memory */
-#define SCM_FREE			free				/*!< use STB MAcro to free memory  */
-#define SCM_STRDUP 			strdup				/*!< use STB MAcro to strdup memory  */
-#define APP_USER_AGENT  	"Startreck/1.0"		/*!< define HTTP Server User Agent visible in Headers Response*/
-#endif /*  CONFIG_EXPOSERVICES ::STB */
+#define SCM_MALLOC			malloc				
+#define SCM_REALLOC 		realloc				
+#define SCM_FREE			free				
+#define SCM_STRDUP 			strdup				
+#define APP_USER_AGENT  	"CPMOP"		
 
 #endif /* UTILITY_H_ */

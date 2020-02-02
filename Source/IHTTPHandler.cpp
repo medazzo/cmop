@@ -9,20 +9,23 @@
 #include "HTTPUtility.h"
 #include "IHTTPHandler.h"
 
-IHTTPHandler::~IHTTPHandler() {
+IHTTPHandler::~IHTTPHandler()
+{
 	log_debug("## destructing  %s  ", m_segment.GetChars());
 }
 
-IHTTPHandler::IHTTPHandler(const char* segment, METHODS methodsSupportMask):m_segment(segment),m_methodsSupportMask(methodsSupportMask) {
+IHTTPHandler::IHTTPHandler(const char *segment, METHODS methodsSupportMask) : m_segment(segment), m_methodsSupportMask(methodsSupportMask)
+{
 	log_debug("## constructing  %s  ", m_segment.GetChars());
 }
 
 NPT_Result
-IHTTPHandler::GetIfModifiedSince(const NPT_HttpMessage& message,
-		NPT_DateTime& date) {
+IHTTPHandler::GetIfModifiedSince(const NPT_HttpMessage &message,
+								 NPT_DateTime &date)
+{
 
-	const NPT_String* value = message.GetHeaders().GetHeaderValue(
-			"If-Modified-Since");
+	const NPT_String *value = message.GetHeaders().GetHeaderValue(
+		"If-Modified-Since");
 	if (!value)
 		return NPT_FAILURE;
 
@@ -34,22 +37,23 @@ IHTTPHandler::GetIfModifiedSince(const NPT_HttpMessage& message,
 	return date.FromString((*value).GetChars(), NPT_DateTime::FORMAT_ANSI);
 }
 NPT_Result
-IHTTPHandler::ServeFile(const NPT_HttpRequest& request,
-		const NPT_HttpRequestContext& context, NPT_HttpResponse& response,
-		NPT_String file_path, const char* mime_type) {
+IHTTPHandler::ServeFile(const NPT_HttpRequest &request,
+						const NPT_HttpRequestContext &context, NPT_HttpResponse &response,
+						NPT_String file_path, const char *mime_type)
+{
 	NPT_InputStreamReference stream;
 	NPT_File file(file_path);
 	NPT_FileInfo file_info;
 
 	// prevent hackers from accessing files outside of our root
-	if ((file_path.Find("/..") >= 0) || (file_path.Find("\\..") >= 0)
-			|| NPT_FAILED(NPT_File::GetInfo(file_path.GetChars(), &file_info))) {
+	if ((file_path.Find("/..") >= 0) || (file_path.Find("\\..") >= 0) || NPT_FAILED(NPT_File::GetInfo(file_path.GetChars(), &file_info)))
+	{
 		return NPT_ERROR_NO_SUCH_ITEM;
 	}
 
 	// check for range requests
-	const NPT_String* range_spec = request.GetHeaders().GetHeaderValue(
-			NPT_HTTP_HEADER_RANGE);
+	const NPT_String *range_spec = request.GetHeaders().GetHeaderValue(
+		NPT_HTTP_HEADER_RANGE);
 
 	/* handle potential 304 only if range header not set
 	 NPT_DateTime  date;
@@ -74,19 +78,20 @@ IHTTPHandler::ServeFile(const NPT_HttpRequest& request,
 	 }*/
 
 	// open file
-	if (NPT_FAILED(file.Open(NPT_FILE_OPEN_MODE_READ))
-			|| NPT_FAILED(file.GetInputStream(stream)) || stream.IsNull()) {
+	if (NPT_FAILED(file.Open(NPT_FILE_OPEN_MODE_READ)) || NPT_FAILED(file.GetInputStream(stream)) || stream.IsNull())
+	{
 		return NPT_ERROR_NO_SUCH_ITEM;
 	}
 
 	// set Last-Modified and Cache-Control headers
-	if (file_info.m_ModificationTime) {
+	if (file_info.m_ModificationTime)
+	{
 		NPT_DateTime last_modified = NPT_DateTime(file_info.m_ModificationTime);
 		response.GetHeaders().SetHeader("Last-Modified",
-				last_modified.ToString(NPT_DateTime::FORMAT_RFC_1123).GetChars(),
-				true);
+										last_modified.ToString(NPT_DateTime::FORMAT_RFC_1123).GetChars(),
+										true);
 		response.GetHeaders().SetHeader("Cache-Control",
-				"max-age=0,must-revalidate", true);
+										"max-age=0,must-revalidate", true);
 		//response.GetHeaders().SetHeader("Cache-Control", "max-age=1800", true);
 	}
 
@@ -97,12 +102,13 @@ IHTTPHandler::ServeFile(const NPT_HttpRequest& request,
 	NPT_TimeStamp now;
 	NPT_System::GetCurrentTimeStamp(now);
 	response.GetHeaders().SetHeader("Date",
-			NPT_DateTime(now).ToString(NPT_DateTime::FORMAT_RFC_1123).GetChars(),
-			true);
+									NPT_DateTime(now).ToString(NPT_DateTime::FORMAT_RFC_1123).GetChars(),
+									true);
 
 	// get entity
-	NPT_HttpEntity* entity = response.GetEntity();
-	if (entity == NULL) {
+	NPT_HttpEntity *entity = response.GetEntity();
+	if (entity == NULL)
+	{
 		log_error("Critic : Entity is Null !!");
 		return NPT_FAILURE;
 	}
@@ -111,18 +117,17 @@ IHTTPHandler::ServeFile(const NPT_HttpRequest& request,
 	entity->SetContentType(mime_type);
 
 	// setup entity body
-	NPT_CHECK(
-			NPT_HttpFileRequestHandler::SetupResponseBody(response, stream,
-					range_spec));
+	// NPT_CHECK(NPT_HttpFileRequestHandler::SetupResponseBody(response, stream, ange_spec));
 
 	// set some default headers
-	if (response.GetEntity()->GetTransferEncoding() != NPT_HTTP_TRANSFER_ENCODING_CHUNKED) {
+	if (response.GetEntity()->GetTransferEncoding() != NPT_HTTP_TRANSFER_ENCODING_CHUNKED)
+	{
 		// set but don't replace Accept-Range header only if body is seekable
 		NPT_Position offset;
-		if (NPT_SUCCEEDED(stream->Tell(offset))
-				&& NPT_SUCCEEDED(stream->Seek(offset))) {
+		if (NPT_SUCCEEDED(stream->Tell(offset)) && NPT_SUCCEEDED(stream->Seek(offset)))
+		{
 			response.GetHeaders().SetHeader(NPT_HTTP_HEADER_ACCEPT_RANGES,
-					"bytes", false);
+											"bytes", false);
 		}
 	}
 
@@ -130,35 +135,42 @@ IHTTPHandler::ServeFile(const NPT_HttpRequest& request,
 }
 
 NPT_Result
-IHTTPHandler::SetupResponse(NPT_HttpRequest& request,
-		const NPT_HttpRequestContext& context, NPT_HttpResponse& response) {
-	if ((request.GetMethod().Compare(NPT_HTTP_METHOD_GET) == 0)
-			&& check_support(m_methodsSupportMask,SUPPORT_GET)) {
+IHTTPHandler::SetupResponse(NPT_HttpRequest &request,
+							const NPT_HttpRequestContext &context, NPT_HttpResponse &response)
+{
+	if ((request.GetMethod().Compare(NPT_HTTP_METHOD_GET) == 0) && check_support(m_methodsSupportMask, SUPPORT_GET))
+	{
 		OnRead(request, context, response);
 		return NPT_SUCCESS;
-	} else if ((request.GetMethod().Compare(NPT_HTTP_METHOD_POST) == 0)
-			&& check_support(m_methodsSupportMask,SUPPORT_POST)) {
+	}
+	else if ((request.GetMethod().Compare(NPT_HTTP_METHOD_POST) == 0) && check_support(m_methodsSupportMask, SUPPORT_POST))
+	{
 		OnUpdate(request, context, response);
 		return NPT_SUCCESS;
-	} else if ((request.GetMethod().Compare(NPT_HTTP_METHOD_PUT) == 0)
-			&& check_support(m_methodsSupportMask,SUPPORT_PUT)) {
+	}
+	else if ((request.GetMethod().Compare(NPT_HTTP_METHOD_PUT) == 0) && check_support(m_methodsSupportMask, SUPPORT_PUT))
+	{
 		OnCreate(request, context, response);
 		return NPT_SUCCESS;
-	} else if ((request.GetMethod().Compare(NPT_HTTP_METHOD_DELETE) == 0)
-			&& check_support(m_methodsSupportMask,SUPPORT_DELETE)) {
+	}
+	else if ((request.GetMethod().Compare(NPT_HTTP_METHOD_DELETE) == 0) && check_support(m_methodsSupportMask, SUPPORT_DELETE))
+	{
 		OnDelete(request, context, response);
 		return NPT_SUCCESS;
-	} else {
+	}
+	else
+	{
 		log_error("## Error : NOT Supported Method Call : %s !",
-				request.GetMethod().GetChars());
+				  request.GetMethod().GetChars());
 		return NPT_ERROR_NOT_SUPPORTED;
 	}
 }
 NPT_Result
 IHTTPHandler::SendResponseBody(
-		const NPT_HttpRequestContext& context, NPT_HttpResponse& response,
-		NPT_OutputStream& output) {
-	NPT_HttpEntity* entity = response.GetEntity();
+	const NPT_HttpRequestContext &context, NPT_HttpResponse &response,
+	NPT_OutputStream &output)
+{
+	NPT_HttpEntity *entity = response.GetEntity();
 	if (entity == NULL)
 		return NPT_SUCCESS;
 
@@ -168,8 +180,9 @@ IHTTPHandler::SendResponseBody(
 		return NPT_SUCCESS;
 
 	// check for chunked transfer encoding
-	NPT_OutputStream* dest = &output;
-	if (entity->GetTransferEncoding() == NPT_HTTP_TRANSFER_ENCODING_CHUNKED) {
+	NPT_OutputStream *dest = &output;
+	if (entity->GetTransferEncoding() == NPT_HTTP_TRANSFER_ENCODING_CHUNKED)
+	{
 		dest = new NPT_HttpChunkedOutputStream(output);
 	}
 
@@ -177,10 +190,11 @@ IHTTPHandler::SendResponseBody(
 	log_debug("sending body stream, %lld bytes", entity->GetContentLength());
 	NPT_LargeSize bytes_written = 0;
 	NPT_Result result = NPT_StreamToStreamCopy(*body_stream, *dest, 0,
-			entity->GetContentLength(), &bytes_written);
-	if (NPT_FAILED(result)) {
+											   entity->GetContentLength(), &bytes_written);
+	if (NPT_FAILED(result))
+	{
 		log_debug("body stream only partially sent, %lld bytes (%d:%s)",
-				bytes_written, result, NPT_ResultText(result));
+				  bytes_written, result, NPT_ResultText(result));
 	}
 
 	// flush to write out any buffered data left in chunked output if used
@@ -192,12 +206,13 @@ IHTTPHandler::SendResponseBody(
 
 	return result;
 }
-bool
-IHTTPHandler::operator==(const NPT_String& other) {
+bool IHTTPHandler::operator==(const NPT_String &other)
+{
 	log_debug("##@ %s  ?? %s ##", m_segment.GetChars(), other.GetChars());
 	return (m_segment == other) ? true : false;
 }
-NPT_String&
-IHTTPHandler::getSegment() {
+NPT_String &
+IHTTPHandler::getSegment()
+{
 	return m_segment;
 }
