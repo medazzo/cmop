@@ -22,17 +22,19 @@
 #include "HTTPServerTestHandlers.h"
 
 #include "HTTPServer.h"
+#include "Neptune.h"
 
-
+NPT_SET_LOCAL_LOGGER("test.server.main")
 static EventingHandler *	eventing = NULL;
 /*----------------------------------------------------------------------
 |   signal CBX
 +---------------------------------------------------------------------*/
 static int STATE = 0;
 static void sig_term(int sig) {
+	UNUSED(sig);
 	STATE = 0;
-	log_debug("we have received a SIG TERM :%d!!",STATE);
-	log_info("put a choice:\n 1 :To Send Event.\n 2: To re-arm for events.\n 3:: To exit.\n " );
+	NPT_LOG_INFO_1("we have received a SIG TERM :%d!!",STATE);
+	NPT_LOG_INFO("put a choice:\n 1 :To Send Event.\n 2: To re-arm for events.\n 3:: To exit.\n " );
 	scanf ("%d",&STATE);
 }
 /*----------------------------------------------------------------------
@@ -54,9 +56,8 @@ void SetAsterisk(HTTPServer * server){
 	 *                          \
 	 *                         error
 	 */
-	HTTPTree::HTTPNode  * ast = tree->getRoot()->AddChildNode(astrix);
+	tree->getRoot()->AddChildNode(astrix)->AddChildNode(error);
 	tree->getRoot()->AddChildNode(security);
-	ast->AddChildNode(error);
 	/* Setting Server Tree and starting  */
 	server->setTreeHandler(tree);
 }
@@ -74,6 +75,8 @@ void SetTT(HTTPServer * server){
 int
 main(int  argc, char**  argv )
 {
+	UNUSED(argc);
+	UNUSED(argv);
 	sigset_t sig_blocked;
 	struct timeval sel_timeout;
 	fd_set read_set;
@@ -89,18 +92,17 @@ main(int  argc, char**  argv )
 	signal(SIGPIPE, SIG_IGN);
 	signal(SIGALRM, SIG_IGN);
 	signal(SIGCHLD, SIG_IGN);
-	signal (SIGHUP, sig_term);
-	signal (SIGINT, sig_term);
-	signal (SIGQUIT,sig_term);
-	signal (SIGTERM,sig_term);
+	signal(SIGHUP, sig_term);
+	signal(SIGINT, sig_term);
+	signal(SIGQUIT,sig_term);
+	signal(SIGTERM,sig_term);
 
 
 	HTTPServer * server = new HTTPServer(NPT_IpAddress::Any,1234,1);
-//	SetHandlers(server);
 	SetAsterisk(server);
-	SetTT(server);
+//	SetTT(server);
 	server->Start();
-	log_info("Server Started !");
+	NPT_LOG_INFO("Server Started !");
 
 	for(;;)
 	{
@@ -114,17 +116,17 @@ main(int  argc, char**  argv )
 
         if(STATE == 1)
         {
-        	log_info("W'll send an Event . " );
+        	NPT_LOG_INFO("W'll send an Event . " );
         	eventing->NotifyWaitingClients();
         }
         else if (STATE == 2){
-    		log_info("Arming for new  Event . " );
+        	NPT_LOG_INFO("Arming for new  Event . " );
     		eventing->ArmEventToBlockNewClients();
 
         }
         else if(STATE == 3)
         {
-        	log_info("W'll exit . " );
+        	NPT_LOG_INFO("W'll exit . " );
 			server->Stop();
 			delete server;
 			return 0;

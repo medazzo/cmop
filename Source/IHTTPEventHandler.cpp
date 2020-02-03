@@ -7,6 +7,9 @@
 */
 
 #include "IHTTPEventHandler.h"
+#include "Neptune.h"
+
+NPT_SET_LOCAL_LOGGER("cmop.server.handler.event")
 
 IHTTPEventHandler::~IHTTPEventHandler() {
 	m_WaitingClient->Clear();
@@ -15,6 +18,8 @@ IHTTPEventHandler::~IHTTPEventHandler() {
 
 IHTTPEventHandler::IHTTPEventHandler(const char* segment, METHODS methodsSupportMask) :
 		IHTTPHandler(segment,m_methodsSupportMask) {
+	UNUSED(methodsSupportMask);
+	UNUSED(segment);
 	m_WaitingClient = new NPT_List<HTTPServerTaskData*>();
 	m_sendnAnEvent = false ;
 }
@@ -48,13 +53,13 @@ IHTTPEventHandler::NotifyWaitingClients() {
 			if(taskata != NULL)
 			{
 				count++;
-				log_debug("Sending response to client %d/%d : ",count,all);
+				NPT_LOG_FINE_1( "Sending response to client %d: ",count);
 
 				NPT_HttpResponse* response = NULL;
 				NPT_Result result = NPT_ERROR_NO_SUCH_ITEM;
 				bool terminate_server = false;
 				IHTTPHandler* found = NULL;
-				log_info(">> Event Are Armed , user will wait @@ %p ..",taskata->m_input.AsPointer());
+				NPT_LOG_INFO_1( ">> Event Are Armed , user will wait @@ %p ..",(void*)taskata->m_input.AsPointer());
 				NPT_HttpResponder responder(taskata->m_input, taskata->m_output);
 
 				// prepare the response body , create a response object, and set it empty
@@ -74,7 +79,7 @@ IHTTPEventHandler::NotifyWaitingClients() {
 				// send the response headers
 				result = responder.SendResponseHeaders(*response);
 				if (NPT_FAILED(result)) {
-					log_info("SendResponseHeaders failed (%d:%s)", result,
+					NPT_LOG_INFO_2( "SendResponseHeaders failed (%d:%s)", result,
 							NPT_ResultText(result));
 					goto end;
 				}
@@ -86,14 +91,12 @@ IHTTPEventHandler::NotifyWaitingClients() {
 					} else {
 						// send body manually in case there was an error with the handler or no handler was found
 						NPT_InputStreamReference body_stream;
-						log_error("Sending The Body !!!!!!!!!!!!!!!!");
 						body->GetInputStream(body_stream);
 						if (!body_stream.IsNull()) {
 							result = NPT_StreamToStreamCopy(*body_stream, *taskata->m_output, 0,
 									body->GetContentLength());
 							if (NPT_FAILED(result)) {
-								log_info("NPT_StreamToStreamCopy returned %d (%s)", result,
-										NPT_ResultText(result));
+								NPT_LOG_INFO_2( "NPT_StreamToStreamCopy returned %d (%s)", result, NPT_ResultText(result));
 								goto end;
 							}
 						}
@@ -110,7 +113,7 @@ IHTTPEventHandler::NotifyWaitingClients() {
 				end:
 				// cleanup
 				delete response;
-				delete taskata->m_request;
+				//delete taskata->m_request;
 				delete taskata;
 			}
 		}

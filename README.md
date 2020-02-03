@@ -1,7 +1,15 @@
 ## Linux, Cygwin, etc ...
-Open a shell, go to the Platinum root directory and type 'scons' (http://scons.org).
+First,install 'scons' (http://scons.org). </br>
+Then  go to cmopo Directory and run
 ```
-> brew update || brew install scons
 > git submodule update --init
 > scons target={TARGET} build_config={Debug|Release}
 ```
+
+To build library and build tests Server :
+
+```
+> scons target=x86-unknown-linux  CMOPO
+> cons target=x86-unknown-linux  Tests/ByServer
+```
+

@@ -13,6 +13,9 @@
 #include "IHTTPEventHandler.h"
 #include "IHTTPAsteriskHandler.h"
 
+#include "Neptune.h"
+
+NPT_SET_LOCAL_LOGGER("test.server.handlers")
 /*
 +---------------------------------------------------------------------
 |       TestHttp
@@ -21,17 +24,40 @@
 class RootHandler : public IHTTPHandler{
 public:
 	RootHandler(NPT_String segment):IHTTPHandler(segment.GetChars(),SUPPORT_NONE){};
-	virtual void OnCreate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
-	virtual void OnRead  (NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
-	virtual void OnUpdate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
-	virtual void OnDelete(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
+	virtual void OnCreate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
+	virtual void OnRead  (NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
+	virtual void OnUpdate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
+	virtual void OnDelete(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
 };
 
 class AstrixHandler : public IHTTPAsteriskHandler{
 public:
 	AstrixHandler():IHTTPAsteriskHandler(SUPPORT_GET){};
-	virtual void OnCreate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
+	virtual void OnCreate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
 	virtual void OnRead  (NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
 		NPT_TimeStamp ts;
 			NPT_System::GetCurrentTimeStamp(ts);
 			NPT_DateTime  l_creationDate;
@@ -40,11 +66,19 @@ public:
 			NPT_HttpEntity* entity = response.GetEntity();
 			entity->SetContentType("text/html");
 			entity->SetInputStream(msg);
-			log_debug("On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
+			NPT_LOG_INFO_2( "On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
 
 	}
-	virtual void OnUpdate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
-	virtual void OnDelete(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
+	virtual void OnUpdate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
+	virtual void OnDelete(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
 };
 
 
@@ -52,33 +86,51 @@ class FileServing : public IHTTPHandler{
 public:
 	FileServing(NPT_String segment):IHTTPHandler(segment.GetChars(),SUPPORT_GET){
 		idx = 0;
-		folder = NPT_String("/home/azzouni/Images");
+		folder = NPT_String("/home/medazzo/Images");
 		NPT_File::ListDir(folder.GetChars(),entrys);
 	};
 private:
 	int idx ;
 	NPT_String folder;
 	NPT_List<NPT_String> entrys  ;
-	virtual void OnCreate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
+	virtual void OnCreate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
 	virtual void OnRead  (NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
 		NPT_String file;
 		NPT_String mime = "image/jpeg ";
 		int ii = idx % entrys.GetItemCount();
 		entrys.Get(ii,file);
 		file = NPT_String::Format("%s/%s",folder.GetChars(),file.GetChars() );
 		NPT_Result res =  this->ServeFile(request,context,response,file.GetChars(),mime.GetChars());
-		log_debug("On A client %s,serving the file::%d/%d:: '%s' with mime '%s' have error '%s' !",
+		NPT_LOG_INFO_6( "On A client %s,serving the file::%d/%d:: '%s' with mime '%s' have error '%s' !",
 				this->getSegment().GetChars(),ii,entrys.GetItemCount(),file.GetChars(),mime.GetChars(),NPT_ResultText(res));
 		idx++;
 	}
-	virtual void OnUpdate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
-	virtual void OnDelete(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
+	virtual void OnUpdate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
+	virtual void OnDelete(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
 };
 class OnCreateHandler : public IHTTPHandler{
 public:
 	OnCreateHandler(NPT_String segment):IHTTPHandler(segment.GetChars(),SUPPORT_PUT){};
 private:
 	virtual void OnCreate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response) {
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
 		NPT_TimeStamp ts;
 		NPT_System::GetCurrentTimeStamp(ts);
 		NPT_DateTime  l_creationDate;
@@ -87,20 +139,38 @@ private:
 		NPT_HttpEntity* entity = response.GetEntity();
 		entity->SetContentType("text/html");
 		entity->SetInputStream(msg);
-		log_debug("On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
+		NPT_LOG_INFO_2( "On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
 	}
-	virtual void OnRead  (NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
-	virtual void OnUpdate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
-	virtual void OnDelete(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
+	virtual void OnRead  (NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
+	virtual void OnUpdate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
+	virtual void OnDelete(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
 };
 class ErrorHandler : public IHTTPHandler{
 public:
 	ErrorHandler(NPT_String segment):IHTTPHandler(segment.GetChars(),SUPPORT_PUT){};
 private:
 	virtual void OnCreate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response) {
-		log_error("BUGGED :: BUGGED : on vas rien faire !");
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+		NPT_LOG_INFO("BUGGED :: BUGGED : on vas rien faire !");
 	}
 	virtual void OnRead  (NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
 		NPT_TimeStamp ts;
 		NPT_System::GetCurrentTimeStamp(ts);
 		NPT_DateTime  l_creationDate;
@@ -109,19 +179,34 @@ private:
 		NPT_HttpEntity* entity = response.GetEntity();
 		entity->SetContentType("text/html");
 		entity->SetInputStream(msg);
-		log_debug("On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
+		NPT_LOG_INFO_2("On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
 	}
-	virtual void OnUpdate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
-	virtual void OnDelete(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
+	virtual void OnUpdate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
+	virtual void OnDelete(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
 };
 
 class EventingHandler : public IHTTPEventHandler{
 public:
 	EventingHandler(NPT_String segment):IHTTPEventHandler(segment.GetChars(),SUPPORT_GET){};
 private:
-	virtual void OnCreate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response) {}
+	virtual void OnCreate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response) {
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
 	virtual void OnRead  (NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
-		log_debug("On A client %s ; Will wait until  get 0  !",this->getSegment().GetChars());
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+		NPT_LOG_INFO_1("On A client %s ; Will wait until  get 0  !",this->getSegment().GetChars());
 		NPT_TimeStamp ts;
 		NPT_System::GetCurrentTimeStamp(ts);
 		NPT_DateTime  l_creationDate;
@@ -130,18 +215,32 @@ private:
 		NPT_HttpEntity* entity = response.GetEntity();
 		entity->SetContentType("text/html");
 		entity->SetInputStream(msg);
-
-		log_debug("On A client %s, @@  '%s' ;End of  wait, got 0 !!",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
+		NPT_LOG_INFO_2("On A client %s, @@  '%s' ;End of  wait, got 0 !!",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
 	}
-	virtual void OnUpdate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
-	virtual void OnDelete(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
+	virtual void OnUpdate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
+	virtual void OnDelete(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
 };
 class OnReadHandler : public IHTTPHandler{
 public:
 	OnReadHandler(NPT_String segment):IHTTPHandler(segment.GetChars(),SUPPORT_GET){};
 private:
-	virtual void OnCreate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response) {}
+	virtual void OnCreate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response) {
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
 	virtual void OnRead  (NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
 		NPT_TimeStamp ts;
 		NPT_System::GetCurrentTimeStamp(ts);
 		NPT_DateTime  l_creationDate;
@@ -150,18 +249,37 @@ private:
 		NPT_HttpEntity* entity = response.GetEntity();
 		entity->SetContentType("text/html");
 		entity->SetInputStream(msg);
-		log_debug("On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
+		NPT_LOG_INFO_2("On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
 	}
-	virtual void OnUpdate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
-	virtual void OnDelete(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
+	virtual void OnUpdate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
+	virtual void OnDelete(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
 };
 class OnUpdateHandler : public IHTTPHandler{
 public:
 	OnUpdateHandler(NPT_String segment):IHTTPHandler(segment.GetChars(),SUPPORT_POST){};
 private:
-	virtual void OnCreate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response) {}
-	virtual void OnRead  (NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
+	virtual void OnCreate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response) {
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
+	virtual void OnRead  (NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
 	virtual void OnUpdate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
 		NPT_TimeStamp ts;
 		NPT_System::GetCurrentTimeStamp(ts);
 		NPT_DateTime  l_creationDate;
@@ -170,18 +288,37 @@ private:
 		NPT_HttpEntity* entity = response.GetEntity();
 		entity->SetContentType("text/html");
 		entity->SetInputStream(msg);
-		log_debug("On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
+		NPT_LOG_INFO_2("On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
 	}
-	virtual void OnDelete(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
+	virtual void OnDelete(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
 };
 class OnDeleteHandler : public IHTTPHandler{
 public:
 	OnDeleteHandler(NPT_String segment):IHTTPHandler(segment.GetChars(),SUPPORT_DELETE){};
 private:
-	virtual void OnCreate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response) {}
-	virtual void OnRead  (NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
-	virtual void OnUpdate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){}
+	virtual void OnCreate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response) {
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
+	virtual void OnRead  (NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
+	virtual void OnUpdate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
+	}
 	virtual void OnDelete(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
 		NPT_TimeStamp ts;
 		NPT_System::GetCurrentTimeStamp(ts);
 		NPT_DateTime  l_creationDate;
@@ -190,7 +327,7 @@ private:
 		NPT_HttpEntity* entity = response.GetEntity();
 		entity->SetContentType("text/html");
 		entity->SetInputStream(msg);
-		log_debug("On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
+		NPT_LOG_INFO_2("On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
 	}
 };
 class OnAllHandler : public IHTTPHandler{
@@ -198,6 +335,9 @@ public:
 	OnAllHandler(NPT_String segment):IHTTPHandler(segment.GetChars(),SUPPORT_ALL){};
 private:
 	virtual void OnCreate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
 		NPT_TimeStamp ts;
 		NPT_System::GetCurrentTimeStamp(ts);
 		NPT_DateTime  l_creationDate;
@@ -206,9 +346,12 @@ private:
 		NPT_HttpEntity* entity = response.GetEntity();
 		entity->SetContentType("text/html");
 		entity->SetInputStream(msg);
-		log_debug("On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
+		NPT_LOG_INFO_2("On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
 	}
  	virtual void OnRead  (NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		 UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
 		NPT_TimeStamp ts;
 		NPT_System::GetCurrentTimeStamp(ts);
 		NPT_DateTime  l_creationDate;
@@ -217,9 +360,12 @@ private:
 		NPT_HttpEntity* entity = response.GetEntity();
 		entity->SetContentType("text/html");
 		entity->SetInputStream(msg);
-		log_debug("On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
+		NPT_LOG_INFO_2("On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
  	}
 	virtual void OnUpdate(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
 		NPT_TimeStamp ts;
 		NPT_System::GetCurrentTimeStamp(ts);
 		NPT_DateTime  l_creationDate;
@@ -228,9 +374,12 @@ private:
 		NPT_HttpEntity* entity = response.GetEntity();
 		entity->SetContentType("text/html");
 		entity->SetInputStream(msg);
-		log_debug("On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
+		NPT_LOG_INFO_2("On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
 	}
 	virtual void OnDelete(NPT_HttpRequest& request, const NPT_HttpRequestContext& context,NPT_HttpResponse& response){
+		UNUSED(request);
+		UNUSED(context);
+		UNUSED(response);
 		NPT_TimeStamp ts;
 		NPT_System::GetCurrentTimeStamp(ts);
 		NPT_DateTime  l_creationDate;
@@ -239,7 +388,7 @@ private:
 		NPT_HttpEntity* entity = response.GetEntity();
 		entity->SetContentType("text/html");
 		entity->SetInputStream(msg);
-		log_debug("On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
+		NPT_LOG_INFO_2("On A client %s, @@  '%s' !",this->getSegment().GetChars(),l_creationDate.ToString(NPT_DateTime::FORMAT_W3C).GetChars());
 	}
 };
 

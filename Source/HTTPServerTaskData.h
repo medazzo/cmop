@@ -9,6 +9,7 @@
 #ifndef HTTPTASKDATA_H_
 #define HTTPTASKDATA_H_
 
+#include "Neptune.h"
 #include "HTTPUtility.h"
 
 class HTTPServer;

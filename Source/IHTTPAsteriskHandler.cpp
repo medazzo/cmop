@@ -8,6 +8,9 @@
 
 #include "IHTTPAsteriskHandler.h"
 
+#include "Neptune.h"
+NPT_SET_LOCAL_LOGGER("cmop.server.handler.asterisk")
+
 IHTTPAsteriskHandler::IHTTPAsteriskHandler(METHODS methodsSupportMask)
 :IHTTPHandler("*",methodsSupportMask) {
 	m_methodsSupportMask = methodsSupportMask;
@@ -21,7 +24,7 @@ IHTTPAsteriskHandler::~IHTTPAsteriskHandler() {
 
 
 bool IHTTPAsteriskHandler::operator ==(const NPT_String& other) {
-	log_debug("Fetching on Tree : segment <<<%s::*>>  on Asterisk Handler !",other.GetChars());
+	NPT_LOG_FINE_1( "Fetching on Tree : segment <<<%s::*>>  on Asterisk Handler !",other.GetChars());
 	this->m_delta.Assign(other.GetChars(),other.GetLength());
 	return true ; // when comparison come to this handler , its always true
 }

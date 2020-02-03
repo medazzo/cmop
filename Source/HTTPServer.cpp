@@ -11,6 +11,9 @@
 #include "HTTPServerTask.h"
 #include "HTTPTree.h"
 
+#include "Neptune.h"
+NPT_SET_LOCAL_LOGGER("cmop.server")
+
 HTTPServer::HTTPServer(NPT_IpAddress listen_address,NPT_UInt16 listen_port, NPT_UInt16 max_threads_workers) :
 NPT_HttpServer(listen_address,listen_port) {
 
@@ -23,10 +26,10 @@ NPT_HttpServer(listen_address,listen_port) {
 		NPT_AutoLock lock(m_LoopLock);
 		m_loop = true;
 	}
-	log_info(">>>>>>>>>>>>>>>>>>>>");
+	NPT_LOG_INFO(">>>>>>>>>>>>>>>>>>>>");
 }
 HTTPServer::~HTTPServer() {
-	log_debug("## destructing  ...  ");
+	NPT_LOG_INFO("## destructing  ...  ");
 	if (isLoop())
 		this->Stop();
 
@@ -39,7 +42,7 @@ HTTPServer::~HTTPServer() {
 		m_DataTasksWorkers->Get(i, t);
 		if(t)
 		{
-			log_warning("Task %ld is deleted !! ",t->GetCurrentThreadId());
+			NPT_LOG_WARNING_1( "Task %d is deleted !! ",t->GetCurrentThreadId());
 			delete t;
 		}
 	}
@@ -74,9 +77,9 @@ HTTPServer::CalculateQueryPath(NPT_String UrlPath,
 		path = UrlPath.Right(UrlPath.GetLength() - 1).Split("/");
 	} else {
 		path = UrlPath.Split("/");
-		log_info("%s >> %d ", UrlPath.GetChars(), path.GetItemCount());
+		NPT_LOG_INFO_2( "%s >> %d ", UrlPath.GetChars(), path.GetItemCount());
 	}
-	log_info(" %s >> %d ", UrlPath.GetChars(), path.GetItemCount());
+	NPT_LOG_INFO_2( " %s >> %d ", UrlPath.GetChars(), path.GetItemCount());
 	return NPT_SUCCESS;
 }
 
@@ -84,9 +87,9 @@ void
 HTTPServer::Run() {
 	NPT_Result result = NPT_FAILURE;
 	do {
-		log_info("Test HTTP server waiting for connection ...");
+		NPT_LOG_INFO("Test HTTP server waiting for connection ...");
 		result = GetNewClient();
-		log_info("GetNewClient returned %d (%s)", result,
+		NPT_LOG_INFO_2( "GetNewClient returned %d (%s)", result,
 				NPT_ResultText(result));
 	} while (isLoop());
 }
@@ -95,7 +98,7 @@ HTTPServer::Stop() {
 	{
 		NPT_AutoLock lock(m_LoopLock);
 		m_loop = false;
-		log_warning("Test HTTP server Stopped ...");
+		NPT_LOG_WARNING("Test HTTP server Stopped ...");
 	}
 	Abort();
 	this->StopAllTasks();
@@ -104,7 +107,7 @@ HTTPServer::Stop() {
 void
 HTTPServer::ProcessClientData(HTTPServerTask * task )
 {
-	log_debug("will extract a new TaskData !");
+	NPT_LOG_INFO("will extract a new TaskData !");
 	HTTPServerTaskData * taskData  = NULL ;
 	{
 		NPT_AutoLock lock(m_TasksLock);
@@ -112,30 +115,30 @@ HTTPServer::ProcessClientData(HTTPServerTask * task )
 	}
 	if(taskData != NULL)
 	{
-		log_debug("Got the new popped TaskData !");
+		NPT_LOG_INFO("Got the new popped TaskData !");
 		if(task != NULL)
 		{
-			log_debug("Will use an old idle task Worker  [%d/%d]!",this->m_DataTasksWorkers->GetItemCount(),m_MaxTasks);
+			NPT_LOG_INFO_2("Will use an old idle task Worker  [%d/%d]!",this->m_DataTasksWorkers->GetItemCount(),m_MaxTasks);
 			task->setData(taskData->m_input,taskData->m_output,taskData->m_context);
 			task->backToWork();
 		}
 		else if (this->m_DataTasksWorkers->GetItemCount() < m_MaxTasks)
 		{
-			log_debug("Will create a new task Worker  !");
+			NPT_LOG_INFO("Will create a new task Worker  !");
 			HTTPServerTask * tt = new HTTPServerTask(taskData->m_input,taskData->m_output,taskData->m_context,this);
 			this->m_DataTasksWorkers->Add(tt);
 			tt->Start();
 		}
 		else
 		{
-			log_error("Very Bizarre Error lost TaskData  : will not be executed ");
+			NPT_LOG_FATAL( "Very Bizarre Error lost TaskData  : will not be executed ");
 		}
 		//cleaning
 		delete taskData ;
 	}
 	else
 	{
-		log_debug("No Waiting TaskData  to be executed ");
+		NPT_LOG_INFO( "No Waiting TaskData  to be executed ");
 	}
 }
 NPT_Result
@@ -146,7 +149,7 @@ HTTPServer::GetNewClient() {
 
 	// Wait to get a new Client
 	NPT_Result result = WaitForNewClient(input, output, &context);
-	log_error("HAVE A NEW CLIENT !! :WaitForNewClient returned %d (%s)", result,
+	NPT_LOG_FATAL_2( "HAVE A NEW CLIENT !! :WaitForNewClient returned %d (%s)", result,
 			NPT_ResultText(result));
 	if (NPT_FAILED(result))
 		return result;
@@ -154,10 +157,10 @@ HTTPServer::GetNewClient() {
 	{
 		NPT_AutoLock lock(m_TasksLock);
 		result = this->m_DataTasksWaiting->Add(new HTTPServerTaskData(input,output,&context));
-		log_info("PushData  returned %d (%s)", result, NPT_ResultText(result));
+		NPT_LOG_WARNING_2( "PushData  returned %d (%s)", result, NPT_ResultText(result));
 	}
 
-	log_debug("A new Data has arrived to be executed  [%s ]",NPT_ResultText(result));
+	NPT_LOG_WARNING_1("A new Data has arrived to be executed  [%s ]",NPT_ResultText(result));
 	// check if we can pop data , else it will be lost
 	HTTPServerTask * task = NULL;
 	bool idle = IsAWorkerIdle(task);
@@ -167,14 +170,14 @@ HTTPServer::GetNewClient() {
 	}
 	else
 	{
-		log_warning("we cannot Launch a new Task , have to wait");
+		NPT_LOG_WARNING("we cannot Launch a new Task , have to wait");
 	}
 
 	return result;
 }
 bool
 HTTPServer::IsAWorkerIdle(HTTPServerTask* &task) {
-	log_info("Cheking if there is an Idle task from %d ones ",m_DataTasksWorkers->GetItemCount());
+	NPT_LOG_INFO_1( "Cheking if there is an Idle task from %d ones ",m_DataTasksWorkers->GetItemCount());
 	int count = 0;
 	for(NPT_Cardinal i = 0;i<m_DataTasksWorkers->GetItemCount();i++)
 	{
@@ -183,7 +186,7 @@ HTTPServer::IsAWorkerIdle(HTTPServerTask* &task) {
 		m_DataTasksWorkers->Get(i, t);
 		if(t)
 		{
-			log_info("on  %d/%d :%ld: IsIdle>> %d  ",count,m_DataTasksWorkers->GetItemCount(),t->GetCurrentThreadId(),t->IsIdle());
+			NPT_LOG_INFO_4( "on  %d/%d :%d: IsIdle>> %d  ",count,m_DataTasksWorkers->GetItemCount(),t->GetCurrentThreadId(),t->IsIdle());
 			if( t->IsIdle() == true )
 			{
 				task = t;
@@ -207,10 +210,10 @@ HTTPServer::StopAllTasks()
 		m_DataTasksWorkers->Get(i, t);
 		if(t)
 		{
-			log_warning("Task %ld is Stopped !! ",t->GetCurrentThreadId());
+			NPT_LOG_WARNING_1( "Task %d is Stopped !! ",t->GetCurrentThreadId());
 			t->Stop();
 		}
 	}
-    log_warning(">> All task are Stopped !! ");
+    NPT_LOG_WARNING(">> All task are Stopped !! ");
     return NPT_SUCCESS;
 }

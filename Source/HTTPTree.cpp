@@ -9,6 +9,9 @@
 #include "HTTPUtility.h"
 #include "HTTPTree.h"
 
+#include "Neptune.h"
+NPT_SET_LOCAL_LOGGER("cmop.server.tree")
+
 HTTPTree::HTTPTree()
 {
 	m_root = NULL;
@@ -33,7 +36,7 @@ void HTTPTree::setRoot(IHTTPHandler *root)
 bool HTTPTree::FindChildNodeOnTree(NPT_List<NPT_String> Segments,
 								   IHTTPHandler *&found)
 {
-	log_debug("Fetching on Tree !");
+	NPT_LOG_INFO("Fetching on Tree !");
 	HTTPNode *t = m_root;
 	NPT_List<NPT_String>::Iterator it = Segments.GetFirstItem();
 	NPT_String segment = *it;
@@ -42,13 +45,13 @@ bool HTTPTree::FindChildNodeOnTree(NPT_List<NPT_String> Segments,
 
 	if (t->operator==(segment))
 	{
-		log_debug("Fetching on Tree : segment[%d]: '%s'  found >>  on root !", count, segment.GetChars());
+		NPT_LOG_FINE_2( "Fetching on Tree : segment[%d]: '%s'  found >>  on root !", count, segment.GetChars());
 		fd = true;
 		it++;
 	}
 	else
 	{
-		log_error("Fetching on Tree : segment[%d]: '%s' NOT found >>  on root !", count, segment.GetChars());
+		NPT_LOG_SEVERE_2("Fetching on Tree : segment[%d]: '%s' NOT found >>  on root !", count, segment.GetChars());
 		return false;
 	}
 
@@ -56,14 +59,14 @@ bool HTTPTree::FindChildNodeOnTree(NPT_List<NPT_String> Segments,
 	{
 		count++;
 		segment = *it;
-		log_debug("Fetching on Tree for segment[%d]: '%s' !", count, segment.GetChars());
+		NPT_LOG_FINE_2( "Fetching on Tree for segment[%d]: '%s' !", count, segment.GetChars());
 		{
-			log_debug("Fetching on Tree : segment[%d]: '%s'  searching on children of '%s' !",
+			NPT_LOG_INFO_3("Fetching on Tree : segment[%d]: '%s'  searching on children of '%s' !",
 					  count, segment.GetChars(), t->getNode()->getSegment().GetChars());
 			fd = t->FindSegmentChildNode(segment, t);
 			if (fd)
 			{
-				log_debug("Fetching on Tree : segment[%d]: '%s'  found >>  on a children !", count, segment.GetChars());
+				NPT_LOG_FINE_2( "Fetching on Tree : segment[%d]: '%s'  found >>  on a children !", count, segment.GetChars());
 				found = t->m_node;
 				fd = true;
 				it++;
@@ -130,7 +133,7 @@ HTTPTree::HTTPNode::AddChildNode(IHTTPHandler *child)
 	}
 	else
 	{
-		log_error(" NULL Handle : will not be Added in Tree !");
+		NPT_LOG_FATAL(" NULL Handle : will not be Added in Tree !");
 	}
 	return ch;
 }

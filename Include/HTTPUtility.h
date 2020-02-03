@@ -47,13 +47,13 @@ const char* const NPT_HTTP_DEFAULT_500_HTML = "<html><head><title>500 Internal E
 
 #define HTTP_DEFAULT_MAX_THREADS_WORKERS	10										/*!< define default MAX Thread Workers  */
 #define HTTP_SERVER_PORT_NUMBER 			8080									/*!< define default HTTP Serve Port     */
-#define HTTP_SERVER_NAME_VERSION_NUMBER			"BYTEL-SDK/V1.0.2"					/*!< define HTTP Server Version visible in Headers Response*/
-#define APP_SERVER_NAME						"BYTEL-SDK"								/*!< define HTTP Server Name visible in Headers Response*/
-#define  check_support(mask,flag)			(((mask & flag) == flag) ? true : false )/*!< define default MAX Thread Workers  */
-
+#define HTTP_SERVER_NAME_VERSION_NUMBER		"CMOP/V0.0.1"							/*!< define HTTP Server Version visible in Headers Response*/
+#define APP_SERVER_NAME						"CMOP-SRV"								/*!< define HTTP Server Name visible in Headers Response*/
+#define check_support(mask,flag)			(((mask & flag) == flag) ? true : false )/*!< define default MAX Thread Workers  */
 
 #define CHECK_MY_RET(x)				{if(x!= NPT_SUCCESS)log_error("Returning ERROR %s ",NPT_ResultText(x));}
 #define CHECK_ERROR_LOG(x,a, ...)	{if(x!= NPT_SUCCESS) log_error("%s:"a ,NPT_ResultText(x),##__VA_ARGS__);}
+#define UNUSED(x)					(void)(x)
 
 /**
  * \enum METHODS
@@ -78,37 +78,5 @@ HANDLER_EVENT  		= 0x1000,   /*!< define the Eventing Handler. */
 HANDLER_ASTERISK   	= 0x0100, 	/*!< define the Asterisk Handler. */
 }HANDLERSTYPES;
 
- /* LOGGING */
-#define EXPO_LOG_TAG "[CPMOP]"
-
-#ifdef ENABLE_LOG
-	#ifdef ANDROID  /* MODE ANDROID */
-		#include <android/log.h>
-		#define log_error(...)    __android_log_print(ANDROID_LOG_ERROR, EXPO_LOG_TAG,__VA_ARGS__)
-		#define log_info(...)     __android_log_print(ANDROID_LOG_INFO,EXPO_LOG_TAG,__VA_ARGS__)
-		#define log_debug(...)    __android_log_print(ANDROID_LOG_DEBUG, EXPO_LOG_TAG,__VA_ARGS__)
-		#define log_warning(...)  __android_log_print(ANDROID_LOG_WARN, EXPO_LOG_TAG,__VA_ARGS__)
-	#else /*#if defined(APPLE_IOS) || defined(__APPLE__) || defined (CONFIG_EXPOSERVICES) */
-		#include <stdio.h>
-		#define log_error( ...)        {printf("\033[31m[%s] [%s][%d]",EXPO_LOG_TAG,__FUNCTION__,__LINE__); printf( __VA_ARGS__);printf("\033[0m \n");}	/*!< error macro log with color red  */
-		#define log_info( ...)         {printf("\033[32m[%s] [%s][%d]",EXPO_LOG_TAG,__FUNCTION__,__LINE__); printf( __VA_ARGS__);printf("\033[0m \n");}	/*!< info macro log with color info  */
-		#define log_debug( ...)        {printf("\033[34m[%s] [%s][%d]",EXPO_LOG_TAG,__FUNCTION__,__LINE__); printf( __VA_ARGS__);printf("\033[0m \n");}	/*!< info macro log with color blue  */
-		#define log_warning( ...)      {printf("\033[36m[%s] [%s][%d]",EXPO_LOG_TAG,__FUNCTION__,__LINE__); printf( __VA_ARGS__);printf("\033[0m \n");}	/*!< macro warning log with color yellow  */
-	#endif
-#else
-	#define log_error( ...)
-	#define log_info( ...)
-	#define log_debug( ...)
-	#define log_warning( ...)
-#endif
-
-
-#include "Neptune.h"
-#include <stdlib.h>
-#define SCM_MALLOC			malloc				
-#define SCM_REALLOC 		realloc				
-#define SCM_FREE			free				
-#define SCM_STRDUP 			strdup				
-#define APP_USER_AGENT  	"CPMOP"		
 
 #endif /* UTILITY_H_ */

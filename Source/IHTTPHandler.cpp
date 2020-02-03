@@ -9,14 +9,17 @@
 #include "HTTPUtility.h"
 #include "IHTTPHandler.h"
 
+#include "Neptune.h"
+NPT_SET_LOCAL_LOGGER("cmop.server.handler")
+
 IHTTPHandler::~IHTTPHandler()
 {
-	log_debug("## destructing  %s  ", m_segment.GetChars());
+	NPT_LOG_INFO_1( "## destructing  %s  ", m_segment.GetChars());
 }
 
 IHTTPHandler::IHTTPHandler(const char *segment, METHODS methodsSupportMask) : m_segment(segment), m_methodsSupportMask(methodsSupportMask)
 {
-	log_debug("## constructing  %s  ", m_segment.GetChars());
+	NPT_LOG_INFO_1( "## constructing  %s  ", m_segment.GetChars());
 }
 
 NPT_Result
@@ -41,6 +44,8 @@ IHTTPHandler::ServeFile(const NPT_HttpRequest &request,
 						const NPT_HttpRequestContext &context, NPT_HttpResponse &response,
 						NPT_String file_path, const char *mime_type)
 {
+	UNUSED(request);
+	UNUSED(context);
 	NPT_InputStreamReference stream;
 	NPT_File file(file_path);
 	NPT_FileInfo file_info;
@@ -51,18 +56,18 @@ IHTTPHandler::ServeFile(const NPT_HttpRequest &request,
 		return NPT_ERROR_NO_SUCH_ITEM;
 	}
 
-	// check for range requests
+	/* check for range requests
 	const NPT_String *range_spec = request.GetHeaders().GetHeaderValue(
 		NPT_HTTP_HEADER_RANGE);
 
-	/* handle potential 304 only if range header not set
+	 // handle potential 304 only if range header not set
 	 NPT_DateTime  date;
 	 NPT_TimeStamp timestamp;
 	 if (NPT_SUCCEEDED(GetIfModifiedSince((NPT_HttpMessage&)request, date)) &&
 	 !range_spec) {
 	 date.ToTimeStamp(timestamp);
 
-	 log_info("File %s timestamps: request=%d (%s) vs file=%d (%s)",
+	 NPT_LOG_INFO_3( "File %s timestamps: request=%d (%s) vs file=%d (%s)",
 	 (const char*)request.GetUrl().GetPath(),
 	 (NPT_UInt32)timestamp.ToSeconds(),
 	 (const char*)date.ToString(),
@@ -71,7 +76,7 @@ IHTTPHandler::ServeFile(const NPT_HttpRequest &request,
 
 	 if (timestamp >= file_info.m_ModificationTime) {
 	 // it's a match
-	 log_info("Returning 304 for %s", request.GetUrl().GetPath().GetChars());
+	 NPT_LOG_INFO_1( "Returning 304 for %s", request.GetUrl().GetPath().GetChars());
 	 response.SetStatus(304, "Not Modified", NPT_HTTP_PROTOCOL_1_1);
 	 //return NPT_SUCCESS;
 	 }
@@ -109,7 +114,7 @@ IHTTPHandler::ServeFile(const NPT_HttpRequest &request,
 	NPT_HttpEntity *entity = response.GetEntity();
 	if (entity == NULL)
 	{
-		log_error("Critic : Entity is Null !!");
+		NPT_LOG_FATAL( "Critic : Entity is Null !!");
 		return NPT_FAILURE;
 	}
 
@@ -160,7 +165,7 @@ IHTTPHandler::SetupResponse(NPT_HttpRequest &request,
 	}
 	else
 	{
-		log_error("## Error : NOT Supported Method Call : %s !",
+		NPT_LOG_FATAL_1( "## Error : NOT Supported Method Call : %s !",
 				  request.GetMethod().GetChars());
 		return NPT_ERROR_NOT_SUPPORTED;
 	}
@@ -170,6 +175,7 @@ IHTTPHandler::SendResponseBody(
 	const NPT_HttpRequestContext &context, NPT_HttpResponse &response,
 	NPT_OutputStream &output)
 {
+	UNUSED(context);
 	NPT_HttpEntity *entity = response.GetEntity();
 	if (entity == NULL)
 		return NPT_SUCCESS;
@@ -187,13 +193,13 @@ IHTTPHandler::SendResponseBody(
 	}
 
 	// send the body
-	log_debug("sending body stream, %lld bytes", entity->GetContentLength());
+	NPT_LOG_INFO_1( "sending body stream, %lld bytes", entity->GetContentLength());
 	NPT_LargeSize bytes_written = 0;
 	NPT_Result result = NPT_StreamToStreamCopy(*body_stream, *dest, 0,
 											   entity->GetContentLength(), &bytes_written);
 	if (NPT_FAILED(result))
 	{
-		log_debug("body stream only partially sent, %lld bytes (%d:%s)",
+		NPT_LOG_INFO_3( "body stream only partially sent, %lld bytes (%d:%s)",
 				  bytes_written, result, NPT_ResultText(result));
 	}
 
@@ -208,7 +214,7 @@ IHTTPHandler::SendResponseBody(
 }
 bool IHTTPHandler::operator==(const NPT_String &other)
 {
-	log_debug("##@ %s  ?? %s ##", m_segment.GetChars(), other.GetChars());
+	NPT_LOG_INFO_2( "##@ %s  ?? %s ##", m_segment.GetChars(), other.GetChars());
 	return (m_segment == other) ? true : false;
 }
 NPT_String &
