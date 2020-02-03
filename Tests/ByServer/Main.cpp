@@ -16,13 +16,11 @@
 #include <signal.h>
 #include <sys/file.h>
 #include <sys/poll.h>
-#include "HTTPUtility.h"
-#include "HTTPTree.h"
-#include "IHTTPHandler.h"
-#include "HTTPServerTestHandlers.h"
 
-#include "HTTPServer.h"
+
 #include "Neptune.h"
+
+#include "CMopServer.h"
 
 NPT_SET_LOCAL_LOGGER("test.server.main")
 static EventingHandler *	eventing = NULL;
@@ -41,7 +39,7 @@ static void sig_term(int sig) {
 |   main
 +---------------------------------------------------------------------*/
 
-void SetAsterisk(HTTPServer * server){
+void SetAsterisk(CMOPServer * server){
 	RootHandler * root = new RootHandler("root");
 	OnReadHandler *	security = new OnReadHandler("security");
 	AstrixHandler * astrix = new AstrixHandler();
@@ -61,7 +59,7 @@ void SetAsterisk(HTTPServer * server){
 	/* Setting Server Tree and starting  */
 	server->setTreeHandler(tree);
 }
-void SetTT(HTTPServer * server){
+void SetTT(CMOPServer * server){
 	RootHandler * root = new RootHandler("root");
 	OnReadHandler *	security = new OnReadHandler("security");
 	ErrorHandler *	error = new ErrorHandler("error");
@@ -98,7 +96,7 @@ main(int  argc, char**  argv )
 	signal(SIGTERM,sig_term);
 
 
-	HTTPServer * server = new HTTPServer(NPT_IpAddress::Any,1234,1);
+	CMOPServer * server = new CMOPServer(CMOPIpAddress::Any,1234,1);
 	SetAsterisk(server);
 //	SetTT(server);
 	server->Start();
@@ -138,4 +136,3 @@ main(int  argc, char**  argv )
 }
 
 /** @} */
-

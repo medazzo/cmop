@@ -11,7 +11,8 @@
 
 #include "IHTTPHandler.h"
 
-
+namespace cmop
+{
 /**
  * \class IHTTPEventHandler
  * \brief The interface of Eventing HTTP Handler .
@@ -110,5 +111,5 @@ public:
 			const NPT_HttpRequestContext& context,
 			NPT_HttpResponse& response) = 0;
 };
-
+}
 #endif /* IHTTPEVENTHANDLER_H_ */

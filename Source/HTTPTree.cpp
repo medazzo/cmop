@@ -12,29 +12,29 @@
 #include "Neptune.h"
 NPT_SET_LOCAL_LOGGER("cmop.server.tree")
 
-HTTPTree::HTTPTree()
+cmop::HTTPTree::HTTPTree()
 {
 	m_root = NULL;
 }
-HTTPTree::HTTPTree(IHTTPHandler *content)
+cmop::HTTPTree::HTTPTree(cmop::IHTTPHandler *content)
 {
 	m_root = new HTTPNode(content);
 }
-HTTPTree::HTTPNode *
-HTTPTree::getRoot()
+cmop::HTTPTree::HTTPNode *
+cmop::HTTPTree::getRoot()
 {
 	return m_root;
 }
-HTTPTree::~HTTPTree()
+cmop::HTTPTree::~HTTPTree()
 {
 	delete m_root;
 }
-void HTTPTree::setRoot(IHTTPHandler *root)
+void cmop::HTTPTree::setRoot(cmop::IHTTPHandler *root)
 {
-	m_root = new HTTPNode(root);
+	m_root = new cmop::HTTPTree::HTTPNode(root);
 }
-bool HTTPTree::FindChildNodeOnTree(NPT_List<NPT_String> Segments,
-								   IHTTPHandler *&found)
+bool cmop::HTTPTree::FindChildNodeOnTree(NPT_List<NPT_String> Segments,
+								   cmop::IHTTPHandler *&found)
 {
 	NPT_LOG_INFO("Fetching on Tree !");
 	HTTPNode *t = m_root;
@@ -82,7 +82,7 @@ bool HTTPTree::FindChildNodeOnTree(NPT_List<NPT_String> Segments,
 	return fd;
 }
 
-HTTPTree::HTTPNode::~HTTPNode()
+cmop::HTTPTree::HTTPNode::~HTTPNode()
 {
 	if (m_node)
 		delete m_node;
@@ -98,32 +98,32 @@ HTTPTree::HTTPNode::~HTTPNode()
 	m_childrens->Clear();
 	delete m_childrens;
 }
-HTTPTree::HTTPNode::HTTPNode()
+cmop::HTTPTree::HTTPNode::HTTPNode()
 {
 	m_node = NULL;
-	m_childrens = new NPT_List<HTTPNode *>();
+	m_childrens = new NPT_List<cmop::HTTPTree::HTTPNode *>();
 }
-HTTPTree::HTTPNode::HTTPNode(IHTTPHandler *node)
+cmop::HTTPTree::HTTPNode::HTTPNode(cmop::IHTTPHandler *node)
 {
 	m_node = node;
-	m_childrens = new NPT_List<HTTPNode *>();
+	m_childrens = new NPT_List<cmop::HTTPTree::HTTPNode *>();
 }
-bool HTTPTree::HTTPNode::operator==(const HTTPNode &other)
+bool cmop::HTTPTree::HTTPNode::operator==(const cmop::HTTPTree::HTTPNode &other)
 {
 	return (m_node == other.m_node) ? true : false;
 }
-bool HTTPTree::HTTPNode::operator==(const HTTPNode *other)
+bool cmop::HTTPTree::HTTPNode::operator==(const cmop::HTTPTree::HTTPNode *other)
 {
 	return (m_node == other->m_node) ? true : false;
 }
-bool HTTPTree::HTTPNode::operator==(const NPT_String &other)
+bool cmop::HTTPTree::HTTPNode::operator==(const NPT_String &other)
 {
 	return (*(m_node) == other) ? true : false;
 }
-HTTPTree::HTTPNode *
-HTTPTree::HTTPNode::AddChildNode(IHTTPHandler *child)
+cmop::HTTPTree::HTTPNode *
+cmop::HTTPTree::HTTPNode::AddChildNode(cmop::IHTTPHandler *child)
 {
-	HTTPNode *ch = new HTTPNode(child);
+	cmop::HTTPTree::HTTPNode *ch = new cmop::HTTPTree::HTTPNode(child);
 	if (child != NULL)
 	{
 		if (child->GetMyHandlerType() == HANDLER_ASTERISK)
@@ -137,19 +137,19 @@ HTTPTree::HTTPNode::AddChildNode(IHTTPHandler *child)
 	}
 	return ch;
 }
-HTTPTree::HTTPNode *
-HTTPTree::HTTPNode::getChildNode(int nIndex)
+cmop::HTTPTree::HTTPNode *
+cmop::HTTPTree::HTTPNode::getChildNode(int nIndex)
 {
-	HTTPNode *t = NULL;
+	cmop::HTTPTree::HTTPNode *t = NULL;
 	m_childrens->Get(nIndex, t);
 	return t;
 }
-NPT_Cardinal HTTPTree::HTTPNode::getChildCount()
+NPT_Cardinal cmop::HTTPTree::HTTPNode::getChildCount()
 {
 	return m_childrens->GetItemCount();
 }
 bool HTTPTree::HTTPNode::FindSegmentChildNode(NPT_String segment,
-											  HTTPNode *&found)
+											  cmop::HTTPTree::HTTPNode *&found)
 {
 	HTTPNode *t = NULL;
 	for (NPT_Cardinal i = 0; i < m_childrens->GetItemCount(); i++)
@@ -163,8 +163,8 @@ bool HTTPTree::HTTPNode::FindSegmentChildNode(NPT_String segment,
 	}
 	return false;
 }
-IHTTPHandler *
-HTTPTree::HTTPNode::getNode()
+cmop::IHTTPHandler *
+cmop::HTTPTree::HTTPNode::getNode()
 {
 	return m_node;
 }

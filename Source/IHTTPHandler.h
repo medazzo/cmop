@@ -10,7 +10,8 @@
 
 #include "HTTPUtility.h"
 #include "HTTPServerTaskData.h"
-
+namespace 
+{
 /**
  * \class IHTTPHandler
  * \brief The interface of static HTTP Handler .
@@ -144,6 +145,5 @@ protected:
 			const NPT_HttpRequestContext& context,
 			NPT_HttpResponse& response) = 0;
 };
-
-
+}
 #endif /* IHTTPHANDLER_H_ */

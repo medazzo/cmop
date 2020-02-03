@@ -9,7 +9,7 @@ Then  go to cmopo Directory and run
 To build library and build tests Server :
 
 ```
-> scons target=x86-unknown-linux  CMOPO
+> scons target=x86-unknown-linux  CMOP
 > cons target=x86-unknown-linux  Tests/ByServer
 ```
 

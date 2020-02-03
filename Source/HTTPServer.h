@@ -4,24 +4,6 @@
  *  \file  HTTPServer.h
  *  \date 11 juin 2013
  *  \author Azzouni Mohamed
- *
- * \mainpage Overview
- *
- * \section features Features
- *
- * Exposervices is a modular module used for exposing STB services to LAN consumer.
- * The exposition is done with UPNP and REST technologie.
- * So the global module architecture is defined by three blocs :
- *
- * \image html ClassDiagram-Server.jpg "Class Diagram"
- * \image latex ClassDiagram-Server.jpg  "Class Diagram"
- *
- * \image html sequenceDiagram.jpg "Sequences Diagram"
- * \image latex sequenceDiagram.jpg  "Sequences Diagram"
- *
- *  \image html algorithm.jpg		"Main Algorithm"
- *  \image latex algorithm.jpg		"Main Algorithm"
- *
 */
 
 #ifndef HTTPRESTSERVER_H_
@@ -31,6 +13,10 @@
 #include "HTTPTree.h"
 #include "IHTTPHandler.h"
 #include "HTTPServerTaskData.h"
+#include "HTTPServerTask.h"
+
+namespace cmop
+{
 
 class IHTTP_Handler;
 
@@ -60,13 +46,13 @@ public:
 	 * and all working threads .
 	 * \return  NPT_SUCCES else Neptune code error .
 	*/
-	NPT_Result Stop();
+	Result Stop();
 
 	/**
 	 * \brief  Called by to post waiting data to a task and ask him to process them
 	 * \param  task the Http Task worker
 	*/
-	void 	ProcessClientData(HTTPServerTask * task );
+	void 	ProcessClientData(cmop::HTTPServerTask * task );
 
 	/**
 	 * \brief  used to transfrom URL to a list of segment .
@@ -93,27 +79,27 @@ public:
 	 * \brief Set the tree Handler to be used by the server.
 	 * \param  treeHandler the  Tree pointer to be settled.
 	*/
-	void setTreeHandler(HTTPTree*& treeHandler);
+	void setTreeHandler(cmop::HTTPTree* treeHandler);
 
 private:
 	/**
 	 * \brief  Stop all tasks associated with this task manager.
 	 * \return  NPT_SUCCES else Neptune code error .
 	*/
-	NPT_Result StopAllTasks();
+	cmop::Result StopAllTasks();
 
 	/**
 	 * \brief  Block  until new client connection is established
 	 * 		and send its data to task manager to be executed.
 	 * \return NPT_SUCCES else Neptune code error .
 	*/
-	NPT_Result GetNewClient();
+	cmop::Result GetNewClient();
 
 	/**
 	 * \brief   check if there is a idle task worker from the list
 	 * \return true if there is an Idle worker else false .
 	*/
-	bool IsAWorkerIdle(HTTPServerTask* &task);
+	bool IsAWorkerIdle(cmop::HTTPServerTask* &task);
 
 	/**
 	 * \brief  Server Threaded function implementation
@@ -133,13 +119,13 @@ private:
 	/** \brief  Mutex to lock/unlock access to m_loop variable.*/
 	NPT_Mutex m_LoopLock;
 	/** \brief  List of Task manager Data waiting to be executed.*/
-	NPT_List<HTTPServerTaskData*> *m_DataTasksWaiting;
+	NPT_List<cmop::HTTPServerTaskData*> *m_DataTasksWaiting;
 	 /** \brief  List of Task worker ready to execute or already executing some data .*/
-	NPT_List<HTTPServerTask*> *m_DataTasksWorkers;
+	NPT_List<cmop::HTTPServerTask*> *m_DataTasksWorkers;
 	 /** \brief  Task manager List lock  .*/
 	NPT_Mutex m_TasksLock;
 	 /** \brief  contains Max allowed task number*/
 	NPT_Cardinal m_MaxTasks;
 };
-
+}
 #endif /* HTTPRESTSERVER_H_ */

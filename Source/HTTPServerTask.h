@@ -12,8 +12,9 @@
 #include "HTTPUtility.h"
 #include "HTTPServerTaskData.h"
 #include "HTTPServer.h"
-class IHTTP_Handler;
 
+namespace cmop
+{
 /**
  * \class HTTPServerTask
  * \brief The server worker thread task .
@@ -73,7 +74,7 @@ private:
 	virtual void Run();
 
 	/** \brief  pointer on Http Server .*/
-	HTTPServer * m_server;
+	cmop::HTTPServer * m_server;
 	/** \brief  Client request input stream.*/
 	NPT_InputStreamReference m_input;
 	/** \brief  Client request ouput stream.*/
@@ -85,5 +86,5 @@ private:
 	/** \brief  boolean variable to check if thread is running.*/
 	bool m_running;
 };
-
+}
 #endif /* HTTPPFSTASK_H_ */

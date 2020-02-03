@@ -52,7 +52,7 @@ const char* const NPT_HTTP_DEFAULT_500_HTML = "<html><head><title>500 Internal E
 #define check_support(mask,flag)			(((mask & flag) == flag) ? true : false )/*!< define default MAX Thread Workers  */
 
 #define CHECK_MY_RET(x)				{if(x!= NPT_SUCCESS)log_error("Returning ERROR %s ",NPT_ResultText(x));}
-#define CHECK_ERROR_LOG(x,a, ...)	{if(x!= NPT_SUCCESS) log_error("%s:"a ,NPT_ResultText(x),##__VA_ARGS__);}
+//#define CHECK_ERROR_LOG(x,a, ...)	{if(x!= NPT_SUCCESS) log_error("%s:"a ,NPT_ResultText(x),##__VA_ARGS__);}
 #define UNUSED(x)					(void)(x)
 
 /**
@@ -75,7 +75,7 @@ SUPPORT_ALL     = SUPPORT_PUT|SUPPORT_GET|SUPPORT_POST|SUPPORT_DELETE	/*!< suppo
 typedef enum  {
 HADNLER_STATIC 		= 0x0,  	/*!< define Static Handler */
 HANDLER_EVENT  		= 0x1000,   /*!< define the Eventing Handler. */
-HANDLER_ASTERISK   	= 0x0100, 	/*!< define the Asterisk Handler. */
+HANDLER_ASTERISK   	= 0x0100 	/*!< define the Asterisk Handler. */
 }HANDLERSTYPES;
 
 

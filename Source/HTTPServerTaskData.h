@@ -11,11 +11,8 @@
 
 #include "Neptune.h"
 #include "HTTPUtility.h"
-
-class HTTPServer;
-class HTTPServerTask;
-
-
+namespace cmop
+{
 /**
  * \class HTTPServerTaskData
  * \brief The server Task Manager Data Class .
@@ -57,5 +54,5 @@ public:
 	/** \brief  m_request  Client request  */
 	NPT_HttpRequest* m_request;
 };
-
+}
 #endif /* HTTPTASKDATA_H_ */
