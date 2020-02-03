@@ -10,7 +10,7 @@
 
 #include "HTTPUtility.h"
 #include "HTTPServerTaskData.h"
-namespace 
+namespace cmop
 {
 /**
  * \class IHTTPHandler

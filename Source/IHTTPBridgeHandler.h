@@ -17,7 +17,7 @@ namespace cmop
  * \class IHTTPBridgeHandler
  * \brief The interface of a bridge HTTP Handler .
 */
-class IHTTPBridgeHandler: public IHTTPHandler {
+class IHTTPBridgeHandler: public cmop::IHTTPHandler {
 public:
 	/**
 	 * \brief   instantiate a static HTTP Handler.

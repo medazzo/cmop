@@ -1,3 +1,5 @@
 .sconsign.dblite
 Build/Targets/*/Debug/*
 ThirdParty/Neptune
+.settings/*
+ThirdParty/Neptune/*

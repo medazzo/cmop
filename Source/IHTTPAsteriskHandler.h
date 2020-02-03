@@ -17,7 +17,7 @@ namespace cmop
  * \class IHTTPAsteriskHandler
  * \brief The interface of Asterisk HTTP Handler .
 */
-class IHTTPAsteriskHandler  : public IHTTPHandler {
+class IHTTPAsteriskHandler  : public cmop::IHTTPHandler {
 	public:
 	/**
 	 * \brief   instantiate a static IHTTPAsteriskHandler Handler.

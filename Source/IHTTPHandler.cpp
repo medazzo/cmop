@@ -12,18 +12,18 @@
 #include "Neptune.h"
 NPT_SET_LOCAL_LOGGER("cmop.server.handler")
 
-IHTTPHandler::~IHTTPHandler()
+cmop::IHTTPHandler::~IHTTPHandler()
 {
 	NPT_LOG_INFO_1( "## destructing  %s  ", m_segment.GetChars());
 }
 
-IHTTPHandler::IHTTPHandler(const char *segment, METHODS methodsSupportMask) : m_segment(segment), m_methodsSupportMask(methodsSupportMask)
+cmop::IHTTPHandler::IHTTPHandler(const char *segment, METHODS methodsSupportMask) : m_segment(segment), m_methodsSupportMask(methodsSupportMask)
 {
 	NPT_LOG_INFO_1( "## constructing  %s  ", m_segment.GetChars());
 }
 
 NPT_Result
-IHTTPHandler::GetIfModifiedSince(const NPT_HttpMessage &message,
+cmop::IHTTPHandler::GetIfModifiedSince(const NPT_HttpMessage &message,
 								 NPT_DateTime &date)
 {
 
@@ -40,7 +40,7 @@ IHTTPHandler::GetIfModifiedSince(const NPT_HttpMessage &message,
 	return date.FromString((*value).GetChars(), NPT_DateTime::FORMAT_ANSI);
 }
 NPT_Result
-IHTTPHandler::ServeFile(const NPT_HttpRequest &request,
+cmop::IHTTPHandler::ServeFile(const NPT_HttpRequest &request,
 						const NPT_HttpRequestContext &context, NPT_HttpResponse &response,
 						NPT_String file_path, const char *mime_type)
 {
@@ -140,7 +140,7 @@ IHTTPHandler::ServeFile(const NPT_HttpRequest &request,
 }
 
 NPT_Result
-IHTTPHandler::SetupResponse(NPT_HttpRequest &request,
+cmop::IHTTPHandler::SetupResponse(NPT_HttpRequest &request,
 							const NPT_HttpRequestContext &context, NPT_HttpResponse &response)
 {
 	if ((request.GetMethod().Compare(NPT_HTTP_METHOD_GET) == 0) && check_support(m_methodsSupportMask, SUPPORT_GET))
@@ -171,7 +171,7 @@ IHTTPHandler::SetupResponse(NPT_HttpRequest &request,
 	}
 }
 NPT_Result
-IHTTPHandler::SendResponseBody(
+cmop::IHTTPHandler::SendResponseBody(
 	const NPT_HttpRequestContext &context, NPT_HttpResponse &response,
 	NPT_OutputStream &output)
 {
@@ -212,13 +212,13 @@ IHTTPHandler::SendResponseBody(
 
 	return result;
 }
-bool IHTTPHandler::operator==(const NPT_String &other)
+bool cmop::IHTTPHandler::operator==(const NPT_String &other)
 {
 	NPT_LOG_INFO_2( "##@ %s  ?? %s ##", m_segment.GetChars(), other.GetChars());
 	return (m_segment == other) ? true : false;
 }
 NPT_String &
-IHTTPHandler::getSegment()
+cmop::IHTTPHandler::getSegment()
 {
 	return m_segment;
 }

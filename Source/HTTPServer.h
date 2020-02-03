@@ -46,7 +46,7 @@ public:
 	 * and all working threads .
 	 * \return  NPT_SUCCES else Neptune code error .
 	*/
-	Result Stop();
+	cmop::Result Stop();
 
 	/**
 	 * \brief  Called by to post waiting data to a task and ask him to process them

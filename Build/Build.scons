@@ -231,7 +231,7 @@ LibraryModule(name                  = 'Neptune',
               source_root           = NPT_SOURCE_ROOT + '/Source')
 
 # CMOPO
-LibraryModule(name               = 'CMOPO',
+LibraryModule(name               = 'CMOP',
               build_source_dirs  = [''],
               build_include_dirs = ['Include'],
               extra_cpp_defines  = extra_cpp_flags,
@@ -242,5 +242,5 @@ tests = ['ByServer']
 for test in tests:
     Application(name    = test+'Test',
                 dir     = 'Tests/'+test,
-                deps    = ['CMOPO'],
+                deps    = ['CMOP'],
               	install = True)
