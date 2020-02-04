@@ -19,7 +19,7 @@ namespace cmop
  * \class HTTPServerTask
  * \brief The server worker thread task .
 */
-class HTTPServerTask: public NPT_Thread {
+class HTTPServerTask: public ::NPT_Thread {
 public:
 	/**
 	 * \brief   instantiate a server task thread worker.
@@ -28,8 +28,9 @@ public:
 	 * \param   context : Client request context
 	 * \param   server : The HTTP server
 	*/
-	HTTPServerTask(NPT_InputStreamReference& input,
-			NPT_OutputStreamReference& output, NPT_HttpRequestContext* context,
+	HTTPServerTask( ::NPT_InputStreamReference& input,
+			::NPT_OutputStreamReference& output, 
+			::NPT_HttpRequestContext* context,
 			HTTPServer *server);
 	/**
 	 * \brief default destructor
@@ -42,8 +43,9 @@ public:
 	 * \param   output : Client request output stream
 	 * \param   context : Client request context
 	*/
-	void setData(NPT_InputStreamReference& input,
-			NPT_OutputStreamReference& output, NPT_HttpRequestContext* context);
+	void setData(	::NPT_InputStreamReference& input,
+			::NPT_OutputStreamReference& output, 
+			::NPT_HttpRequestContext* context);
 
 	/**
 	 * \brief  Ask the Task to back to work and process data , nothing will be done if is already busy.
@@ -66,7 +68,7 @@ private:
 	 * \brief  used to respond to client
 	 * \return  NPT_SUCCES else Neptune code error .
 	*/
-	NPT_Result RespondToClient();
+	::NPT_Result RespondToClient();
 
 	/**
 	 * \brief  Task Threaded function implementation
@@ -74,15 +76,15 @@ private:
 	virtual void Run();
 
 	/** \brief  pointer on Http Server .*/
-	cmop::HTTPServer * m_server;
+	HTTPServer * m_server;
 	/** \brief  Client request input stream.*/
-	NPT_InputStreamReference m_input;
+	::NPT_InputStreamReference m_input;
 	/** \brief  Client request ouput stream.*/
-	NPT_OutputStreamReference m_output;
+	::NPT_OutputStreamReference m_output;
 	/** \brief  Client request context */
-	NPT_HttpRequestContext* m_context;
+	::NPT_HttpRequestContext* m_context;
 	/** \brief  shared Variable used to indicate busy status .*/
-	NPT_SharedVariable * m_status;
+	::NPT_SharedVariable * m_status;
 	/** \brief  boolean variable to check if thread is running.*/
 	bool m_running;
 };

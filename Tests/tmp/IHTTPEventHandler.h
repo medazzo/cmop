@@ -17,7 +17,7 @@ namespace cmop
  * \class IHTTPEventHandler
  * \brief The interface of Eventing HTTP Handler .
 */
-class IHTTPEventHandler: public cmop::IHTTPHandler {
+class IHTTPEventHandler: public IHTTPHandler {
 public:
 	/**
 	 * \brief   instantiate a static HTTP Handler.

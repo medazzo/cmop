@@ -15,7 +15,13 @@
 #include "Neptune.h"
 NPT_SET_LOCAL_LOGGER("cmop.server")
 
-cmop::HTTPServer::HTTPServer(NPT_IpAddress listen_address,NPT_UInt16 listen_port, NPT_UInt16 max_threads_workers) :
+namespace cmop
+{
+
+/*----------------------------------------------------------------------
+|   HTTPServer::HTTPServer
++---------------------------------------------------------------------*/
+HTTPServer::HTTPServer(NPT_IpAddress listen_address,NPT_UInt16 listen_port, NPT_UInt16 max_threads_workers) :
 NPT_HttpServer(listen_address,listen_port) {
 
 	treeHandler = NULL;
@@ -29,7 +35,11 @@ NPT_HttpServer(listen_address,listen_port) {
 	}
 	NPT_LOG_INFO(">>>>>>>>>>>>>>>>>>>>");
 }
-cmop::HTTPServer::~HTTPServer() {
+
+/*----------------------------------------------------------------------
+|   HTTPServer::~HTTPServer
++---------------------------------------------------------------------*/
+HTTPServer::~HTTPServer() {
 	NPT_LOG_INFO("## destructing  ...  ");
 	if (isLoop())
 		this->Stop();
@@ -43,7 +53,7 @@ cmop::HTTPServer::~HTTPServer() {
 		m_DataTasksWorkers->Get(i, t);
 		if(t)
 		{
-			NPT_LOG_WARNING_1( "Task %d is deleted !! ",t->GetCurrentThreadId());
+			NPT_LOG_WARNING_1( "Task %llu is deleted !! ",t->GetCurrentThreadId());
 			delete t;
 		}
 	}
@@ -56,23 +66,35 @@ cmop::HTTPServer::~HTTPServer() {
     m_DataTasksWorkers->Clear();
     delete m_DataTasksWorkers;
 }
-bool
-cmop::HTTPServer::isLoop() {
+
+/*----------------------------------------------------------------------
+|   HTTPServer::isLoop
++---------------------------------------------------------------------*/
+bool HTTPServer::isLoop() {
 	{
 		NPT_AutoLock lock(m_LoopLock);
 		return m_loop;
 	}
 }
-cmop::HTTPTree*
-cmop::HTTPServer::getTreeHandler() {
+
+/*----------------------------------------------------------------------
+|   HTTPServer::getTreeHandler
++---------------------------------------------------------------------*/
+HTTPTree* HTTPServer::getTreeHandler() {
 	return treeHandler;
 }
-void
-cmop::HTTPServer::setTreeHandler(HTTPTree* treeHandler) {
+
+/*----------------------------------------------------------------------
+|   HTTPServer::setTreeHandler
++---------------------------------------------------------------------*/
+void HTTPServer::setTreeHandler(HTTPTree* treeHandler) {
 	this->treeHandler = treeHandler;
 }
-NPT_Result
-cmop::HTTPServer::CalculateQueryPath(NPT_String UrlPath,
+
+/*----------------------------------------------------------------------
+|   HTTPServer::CalculateQueryPath
++---------------------------------------------------------------------*/
+NPT_Result HTTPServer::CalculateQueryPath(NPT_String UrlPath,
 		NPT_List<NPT_String>& path) {
 	if (UrlPath.StartsWith("/")) {
 		path = UrlPath.Right(UrlPath.GetLength() - 1).Split("/");
@@ -84,8 +106,10 @@ cmop::HTTPServer::CalculateQueryPath(NPT_String UrlPath,
 	return NPT_SUCCESS;
 }
 
-void
-cmop::HTTPServer::Run() {
+/*----------------------------------------------------------------------
+|   HTTPServer::Run
++---------------------------------------------------------------------*/
+void HTTPServer::Run() {
 	NPT_Result result = NPT_FAILURE;
 	do {
 		NPT_LOG_INFO("Test HTTP server waiting for connection ...");
@@ -94,8 +118,11 @@ cmop::HTTPServer::Run() {
 				NPT_ResultText(result));
 	} while (isLoop());
 }
-cmop::Result
-cmop::HTTPServer::Stop() {
+
+/*----------------------------------------------------------------------
+|   HTTPServer::Stop
++---------------------------------------------------------------------*/
+Result HTTPServer::Stop() {
 	{
 		NPT_AutoLock lock(m_LoopLock);
 		m_loop = false;
@@ -103,10 +130,13 @@ cmop::HTTPServer::Stop() {
 	}
 	Abort();
 	this->StopAllTasks();
-	return cmop::Result::CMOP_SUCCESS;
+	return CMOP_SUCCESS;
 }
-void
-cmop::HTTPServer::ProcessClientData(cmop::HTTPServerTask * task )
+
+/*----------------------------------------------------------------------
+|   HTTPServer::ProcessClientData
++---------------------------------------------------------------------*/
+void HTTPServer::ProcessClientData(HTTPServerTask * task )
 {
 	NPT_LOG_INFO("will extract a new TaskData !");
 	HTTPServerTaskData * taskData  = NULL ;
@@ -142,18 +172,21 @@ cmop::HTTPServer::ProcessClientData(cmop::HTTPServerTask * task )
 		NPT_LOG_INFO( "No Waiting TaskData  to be executed ");
 	}
 }
-cmop::Result
-cmop::HTTPServer::GetNewClient() {
-	NPT_InputStreamReference input;
-	NPT_OutputStreamReference output;
-	NPT_HttpRequestContext context;
+
+/*----------------------------------------------------------------------
+|   HTTPServer::GetNewClient
++---------------------------------------------------------------------*/
+Result HTTPServer::GetNewClient() {
+	::NPT_InputStreamReference input;
+	::NPT_OutputStreamReference output;
+	::NPT_HttpRequestContext context;
 
 	// Wait to get a new Client
-	NPT_Result result = WaitForNewClient(input, output, &context);
+	::NPT_Result result = WaitForNewClient(input, output, &context);
 	NPT_LOG_FATAL_2( "HAVE A NEW CLIENT !! :WaitForNewClient returned %d (%s)", result,
 			NPT_ResultText(result));
 	if (NPT_FAILED(result))
-		return result;
+		return MapNPTResult(result);
 
 	{
 		NPT_AutoLock lock(m_TasksLock);
@@ -174,10 +207,13 @@ cmop::HTTPServer::GetNewClient() {
 		NPT_LOG_WARNING("we cannot Launch a new Task , have to wait");
 	}
 
-	return (cmop::Result) result;
+	return MapNPTResult(result);
 }
-bool
-cmop::HTTPServer::IsAWorkerIdle(cmop::HTTPServerTask* &task) {
+
+/*----------------------------------------------------------------------
+|   HTTPServer::IsAWorkerIdle
++---------------------------------------------------------------------*/
+bool HTTPServer::IsAWorkerIdle(HTTPServerTask* &task) {
 	NPT_LOG_INFO_1( "Cheking if there is an Idle task from %d ones ",m_DataTasksWorkers->GetItemCount());
 	int count = 0;
 	for(NPT_Cardinal i = 0;i<m_DataTasksWorkers->GetItemCount();i++)
@@ -187,7 +223,7 @@ cmop::HTTPServer::IsAWorkerIdle(cmop::HTTPServerTask* &task) {
 		m_DataTasksWorkers->Get(i, t);
 		if(t)
 		{
-			NPT_LOG_INFO_4( "on  %d/%d :%d: IsIdle>> %d  ",count,m_DataTasksWorkers->GetItemCount(),t->GetCurrentThreadId(),t->IsIdle());
+			NPT_LOG_INFO_4( "on  %d/%d :%llu: IsIdle>> %d  ",count, m_DataTasksWorkers->GetItemCount(), t->GetCurrentThreadId(),t->IsIdle());
 			if( t->IsIdle() == true )
 			{
 				task = t;
@@ -197,8 +233,11 @@ cmop::HTTPServer::IsAWorkerIdle(cmop::HTTPServerTask* &task) {
 	}
 	return false;
 }
-cmop::Result
-cmop::HTTPServer::StopAllTasks()
+
+/*----------------------------------------------------------------------
+|   HTTPServer::StopAllTasks
++---------------------------------------------------------------------*/
+Result HTTPServer::StopAllTasks()
 {
 	{
 		NPT_AutoLock lock(m_TasksLock);
@@ -211,10 +250,11 @@ cmop::HTTPServer::StopAllTasks()
 		m_DataTasksWorkers->Get(i, t);
 		if(t)
 		{
-			NPT_LOG_WARNING_1( "Task %d is Stopped !! ",t->GetCurrentThreadId());
+			NPT_LOG_WARNING_1( "Task %llu is Stopped !! ",t->GetCurrentThreadId());
 			t->Stop();
 		}
 	}
     NPT_LOG_WARNING(">> All task are Stopped !! ");
-    return cmop::Result::CMOP_SUCCESS;
+    return  CMOP_SUCCESS;
+}
 }

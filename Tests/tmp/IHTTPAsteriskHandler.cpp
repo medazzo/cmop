@@ -11,24 +11,24 @@
 #include "Neptune.h"
 NPT_SET_LOCAL_LOGGER("cmop.server.handler.asterisk")
 
-cmop::IHTTPAsteriskHandler::IHTTPAsteriskHandler(METHODS methodsSupportMask)
+IHTTPAsteriskHandler::IHTTPAsteriskHandler(METHODS methodsSupportMask)
 :IHTTPHandler("*",methodsSupportMask) {
 	m_methodsSupportMask = methodsSupportMask;
 	m_segment = NPT_String("*");
 	m_delta = NPT_String("");
 }
 
-cmop::IHTTPAsteriskHandler::~IHTTPAsteriskHandler() {
+IHTTPAsteriskHandler::~IHTTPAsteriskHandler() {
 	// TODO Auto-generated destructor stub
 }
 
 
-bool cmop::IHTTPAsteriskHandler::operator ==(const NPT_String& other) {
+bool IHTTPAsteriskHandler::operator ==(const NPT_String& other) {
 	NPT_LOG_FINE_1( "Fetching on Tree : segment <<<%s::*>>  on Asterisk Handler !",other.GetChars());
 	this->m_delta.Assign(other.GetChars(),other.GetLength());
 	return true ; // when comparison come to this handler , its always true
 }
 
-NPT_String& cmop::IHTTPAsteriskHandler::getDelta() {
+NPT_String& IHTTPAsteriskHandler::getDelta() {
 	return m_delta;
 }

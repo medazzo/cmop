@@ -12,21 +12,48 @@
 namespace cmop
 {
 
+
 class HTTPServer;
 class NPT_HttpRequest;
 class NPT_HttpRequestContext;
 class NPT_HttpResponse;
+
+/**
+ * \enum METHODS
+ * \brief Contains the Value of the Http Method that can be supported by different types of handlers
+*/
+typedef enum {
+SUPPORT_NONE 	= 0x0,		/*!< Do not support Any Methods. */
+SUPPORT_PUT   	= 0x1000,	/*!< support for PUT Method. */
+SUPPORT_GET   	= 0x0100,	/*!< support for GET Method. */
+SUPPORT_POST   	= 0x0010,	/*!< support for POST Method. */
+SUPPORT_DELETE  = 0x0001,	/*!< support for DELETE Method. */
+SUPPORT_ALL     = SUPPORT_PUT|SUPPORT_GET|SUPPORT_POST|SUPPORT_DELETE	/*!< support for ALL Method. */
+}METHODS;
+
+/**
+ * \enum HANDLERSTYPES
+ * \brief Contains the Value of theHandlers Types : Static , Eventing or Asterisk .
+*/
+typedef enum  {
+HADNLER_STATIC 		= 0x0,  	/*!< define Static Handler */
+HANDLER_EVENT  		= 0x1000,   /*!< define the Eventing Handler. */
+HANDLER_ASTERISK   	= 0x0100 	/*!< define the Asterisk Handler. */
+}HANDLERSTYPES;
+
+
 /**
   * \brief enumeration that define results
 */
 typedef enum
 {
-	CMOP_SUCCESS = 0,
-	IPV6
-} Result;
-
+   CMOP_SUCCESS   = 0,
+   CMOP_ERROR     ,
+   CMOP_UNKNOWN_RESULT,
+   CMOP_NOTDEFINED_RESULT
+}Result;
 /**
- * \class CMOP IpAddress 
+ * \class CMOP IpAddress
  * \brief The Ip Address Class .
 */
 class IpAddress
@@ -37,11 +64,11 @@ public:
 	static const IpAddress Loopback;
 
 	// constructors and destructor
-	IpAddress();	
+	IpAddress();
 	IpAddress(unsigned long address);
 	IpAddress(unsigned char a, unsigned char b, unsigned char c, unsigned char d);
 
-    // members    
+    // members
     unsigned long m_Address;
 };
 
@@ -52,6 +79,19 @@ public:
 */
 class IHTTPHandler
 {
+public:
+	/**
+	 * \brief   instantiate a static HTTP Handler.
+	 * \param   segment : The String segment responsible for this handler .
+	 * \param   methodsSupportMask The mask containing supported Http Method
+	*/
+	IHTTPHandler(    char * segment,
+                     METHODS methodsSupportMask = SUPPORT_NONE);
+
+	/**
+	 * \brief destructor of IHTTP Handler
+	*/
+	virtual ~IHTTPHandler();
 
 	/**
 	 * \brief  this function is called when a PUT request is arrived and when PUT is enabled .
@@ -62,7 +102,7 @@ class IHTTPHandler
 	*/
 	virtual void OnCreate(NPT_HttpRequest &request,
 						  const NPT_HttpRequestContext &context,
-						  NPT_HttpResponse &response) = 0;
+						  NPT_HttpResponse &response) ;
 
 	/**
 	 * \brief  this function is called when a GET request is arrived and when GET is enabled .
@@ -73,7 +113,7 @@ class IHTTPHandler
 	*/
 	virtual void OnRead(NPT_HttpRequest &request,
 						const NPT_HttpRequestContext &context,
-						NPT_HttpResponse &response) = 0;
+						NPT_HttpResponse &response) ;
 
 	/**
 	 * \brief  this function is called when a POST request is arrived and when POST is enabled .
@@ -84,7 +124,7 @@ class IHTTPHandler
 	*/
 	virtual void OnUpdate(NPT_HttpRequest &request,
 						  const NPT_HttpRequestContext &context,
-						  NPT_HttpResponse &response) = 0;
+						  NPT_HttpResponse &response) ;
 
 	/**
 	 * \brief  this function is called when a DELETE request is arrived and when DELETE is enabled .
@@ -95,7 +135,36 @@ class IHTTPHandler
 	*/
 	virtual void OnDelete(NPT_HttpRequest &request,
 						  const NPT_HttpRequestContext &context,
-						  NPT_HttpResponse &response) = 0;
+						  NPT_HttpResponse &response) ;
+
+	/**
+	 * \brief get the Handler segment.
+	 * \return  NPT_String segment of the handler.
+	*/
+	virtual char * getSegment();
+
+	/**
+	 * \brief  used to serve file to the client
+	 * \param   request : the client query
+	 * \param   context : the request http context.
+	 * \param   response : the response
+	 * \param   file_path: the file path to be served
+	 * \param   mime_type: the file mime_type
+	 * \return  NPT_SUCCES else Neptune code error .
+	*/
+	Result ServeFile( const NPT_HttpRequest&        request,
+                            const NPT_HttpRequestContext& context,
+                            NPT_HttpResponse&             response,
+                            const char*                   file_path,
+                            const char*  			 	 mime_type);
+
+
+
+protected:
+	/** \brief the Handler segment. */
+	unsigned char m_segment[16];
+	/** \brief  True when HTTP Method POSt is enabled .. */
+	METHODS m_methodsSupportMask;
 };
 
 /**
@@ -131,8 +200,8 @@ public:
 	 * \brief Set the root Handler to be used by the server.
 	 * \param  treeHandler the  Tree pointer to be settled.
 	*/
-	void setRoot( cmop::IHTTPHandler *treeHandler);
- 
+	void setRoot( IHTTPHandler *treeHandler);
+
 private:
 	/** \brief  Tree Handler pointer of the Server .*/
 	HTTPServer * m_server;

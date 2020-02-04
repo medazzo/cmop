@@ -1,0 +1,126 @@
+/**
+ *  \copyright Copyright (c) 2011, 2012 All Right Reserved
+ *  \brief implementation of Http Handlers interface.
+ *  \file IHTTPHandlerImpl.cpp
+ *  \date 11 juin 2013
+ *  \author Azzouni Mohamed
+ */
+
+#include "HTTPUtility.h"
+#include "IHTTPHandlerImpl.h"
+
+#include "Neptune.h"
+NPT_SET_LOCAL_LOGGER("cmop.server.handler")
+
+IHTTPHandlerImpl::~IHTTPHandlerImpl()
+{
+	NPT_LOG_INFO_1( "## destructing  %s  ", m_segment.GetChars());
+}
+
+IHTTPHandlerImpl::IHTTPHandlerImpl(const char *segment, METHODS methodsSupportMask) : m_segment(segment), m_methodsSupportMask(methodsSupportMask)
+{
+	NPT_LOG_INFO_1( "## constructing  %s  ", m_segment.GetChars());
+}
+
+NPT_Result
+IHTTPHandlerImpl::GetIfModifiedSince(const NPT_HttpMessage &message,
+								 NPT_DateTime &date)
+{
+
+	const NPT_String *value = message.GetHeaders().GetHeaderValue(
+		"If-Modified-Since");
+	if (!value)
+		return NPT_FAILURE;
+
+	// Try RFC 1123, RFC 1036, then ANSI
+	if (NPT_SUCCEEDED(date.FromString((*value).GetChars(), NPT_DateTime::FORMAT_RFC_1123)))
+		return NPT_SUCCESS;
+	if (NPT_SUCCEEDED(date.FromString((*value).GetChars(), NPT_DateTime::FORMAT_RFC_1036)))
+		return NPT_SUCCESS;
+	return date.FromString((*value).GetChars(), NPT_DateTime::FORMAT_ANSI);
+}
+
+
+NPT_Result
+IHTTPHandlerImpl::SetupResponse(NPT_HttpRequest &request,
+							const NPT_HttpRequestContext &context, NPT_HttpResponse &response)
+{
+	if ((request.GetMethod().Compare(NPT_HTTP_METHOD_GET) == 0) && check_support(m_methodsSupportMask, SUPPORT_GET))
+	{
+		OnRead(request, context, response);
+		return NPT_SUCCESS;
+	}
+	else if ((request.GetMethod().Compare(NPT_HTTP_METHOD_POST) == 0) && check_support(m_methodsSupportMask, SUPPORT_POST))
+	{
+		OnUpdate(request, context, response);
+		return NPT_SUCCESS;
+	}
+	else if ((request.GetMethod().Compare(NPT_HTTP_METHOD_PUT) == 0) && check_support(m_methodsSupportMask, SUPPORT_PUT))
+	{
+		OnCreate(request, context, response);
+		return NPT_SUCCESS;
+	}
+	else if ((request.GetMethod().Compare(NPT_HTTP_METHOD_DELETE) == 0) && check_support(m_methodsSupportMask, SUPPORT_DELETE))
+	{
+		OnDelete(request, context, response);
+		return NPT_SUCCESS;
+	}
+	else
+	{
+		NPT_LOG_FATAL_1( "## Error : NOT Supported Method Call : %s !",
+				  request.GetMethod().GetChars());
+		return NPT_ERROR_NOT_SUPPORTED;
+	}
+}
+NPT_Result
+IHTTPHandlerImpl::SendResponseBody(
+	const NPT_HttpRequestContext &context, NPT_HttpResponse &response,
+	NPT_OutputStream &output)
+{
+	UNUSED(context);
+	NPT_HttpEntity *entity = response.GetEntity();
+	if (entity == NULL)
+		return NPT_SUCCESS;
+
+	NPT_InputStreamReference body_stream;
+	entity->GetInputStream(body_stream);
+	if (body_stream.IsNull())
+		return NPT_SUCCESS;
+
+	// check for chunked transfer encoding
+	NPT_OutputStream *dest = &output;
+	if (entity->GetTransferEncoding() == NPT_HTTP_TRANSFER_ENCODING_CHUNKED)
+	{
+		dest = new NPT_HttpChunkedOutputStream(output);
+	}
+
+	// send the body
+	NPT_LOG_INFO_1( "sending body stream, %lld bytes", entity->GetContentLength());
+	NPT_LargeSize bytes_written = 0;
+	NPT_Result result = NPT_StreamToStreamCopy(*body_stream, *dest, 0,
+											   entity->GetContentLength(), &bytes_written);
+	if (NPT_FAILED(result))
+	{
+		NPT_LOG_INFO_3( "body stream only partially sent, %lld bytes (%d:%s)",
+				  bytes_written, result, NPT_ResultText(result));
+	}
+
+	// flush to write out any buffered data left in chunked output if used
+	dest->Flush();
+
+	// cleanup (this will send zero size chunk followed by CRLF)
+	if (dest != &output)
+		delete dest;
+
+	return result;
+}
+bool IHTTPHandlerImpl::operator==(const NPT_String &other)
+{
+	NPT_LOG_INFO_2( "##@ %s  ?? %s ##", m_segment.GetChars(), other.GetChars());
+	return (m_segment == other) ? true : false;
+}
+NPT_String &
+IHTTPHandlerImpl::getSegment()
+{
+	return m_segment;
+}

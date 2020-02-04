@@ -1,46 +1,36 @@
 /**
  *  \copyright Copyright (c) 2011, 2012 All Right Reserved
- *  \brief implementation of the Asterisk Http Handler
- *  \file  IHTTPAsteriskHandler.h
+ *  \brief implementation of the Bridge Http Handler
+ *  \file  IHTTPBridgeHandler.h
  *  \date 11 juin 2013
  *  \author Azzouni Mohamed
 */
 
-#ifndef IHTTPASTERISKHANDLER_H_
-#define IHTTPASTERISKHANDLER_H_
+#ifndef IHTTPBRIDGEHANDLER_H_
+#define IHTTPBRIDGEHANDLER_H_
 
 #include "IHTTPHandler.h"
 
 namespace cmop
 {
 /**
- * \class IHTTPAsteriskHandler
- * \brief The interface of Asterisk HTTP Handler .
+ * \class IHTTPBridgeHandler
+ * \brief The interface of a bridge HTTP Handler .
 */
-class IHTTPAsteriskHandler  : public cmop::IHTTPHandler {
-	public:
+class IHTTPBridgeHandler: public IHTTPHandler {
+public:
 	/**
-	 * \brief   instantiate a static IHTTPAsteriskHandler Handler.
+	 * \brief   instantiate a static HTTP Handler.
+	 * \param   segment  The String segment responsible for this handler .
 	 * \param   methodsSupportMask The mask containing supported Http Method
 	*/
-	IHTTPAsteriskHandler(METHODS methodsSupportMask = SUPPORT_NONE);
+	IHTTPBridgeHandler(const char* segment):IHTTPHandler(segment,SUPPORT_NONE){};
 	/**
 	 *  \brief destructor
 	 */
-	~IHTTPAsteriskHandler();
-	/**
-	 * \brief   Get the Handler Type.
-	 * \return  the Handler Type :HANDLER_ASTERISK.
-	*/
-	virtual HANDLERSTYPES GetMyHandlerType(){return HANDLER_ASTERISK;};
+	~IHTTPBridgeHandler(){};
 
-	/**
-	 * \brief  operator used to  compare handler segment with string
-	 * \param   other : string to be compared with Handler segment.
-	 * \return  NPT_SUCCES else Neptune code error .
-	*/
-	virtual bool operator==(const NPT_String& other);
-
+public:
 	/**
 	 * \brief  this function is called when a PUT request is arrived and when PUT is enabled
 	 * :: for Eventing type Handler this function is called whe nthe event is sent .
@@ -49,9 +39,9 @@ class IHTTPAsteriskHandler  : public cmop::IHTTPHandler {
 	 * \param   response : the response
 	 * \return  NPT_SUCCES else Neptune code error .
 	*/
-	virtual void OnCreate(NPT_HttpRequest& request,
+	void OnCreate(NPT_HttpRequest& request,
 			const NPT_HttpRequestContext& context,
-			NPT_HttpResponse& response) = 0;
+			NPT_HttpResponse& response) {/* NOT Supported */};
 
 	/**
 	 * \brief  this function is called when a GET request is arrived and when GET is enabled .
@@ -61,9 +51,9 @@ class IHTTPAsteriskHandler  : public cmop::IHTTPHandler {
 	 * \param   response : the response
 	 * \return  NPT_SUCCES else Neptune code error .
 	*/
-	virtual void OnRead(NPT_HttpRequest& request,
+	void OnRead(NPT_HttpRequest& request,
 			const NPT_HttpRequestContext& context,
-			NPT_HttpResponse& response) = 0;
+			NPT_HttpResponse& response)  {/* NOT Supported */};
 
 	/**
 	 * \brief  this function is called when a POST request is arrived and when POST is enabled .
@@ -73,9 +63,9 @@ class IHTTPAsteriskHandler  : public cmop::IHTTPHandler {
 	 * \param   response : the response
 	 * \return  NPT_SUCCES else Neptune code error .
 	*/
-	virtual void OnUpdate(NPT_HttpRequest& request,
+	void OnUpdate(NPT_HttpRequest& request,
 			const NPT_HttpRequestContext& context,
-			NPT_HttpResponse& response) = 0;
+			NPT_HttpResponse& response)  {/* NOT Supported */};
 
 	/**
 	 * \brief  this function is called when a DELETE request is arrived and when DELETE is enabled .
@@ -85,23 +75,9 @@ class IHTTPAsteriskHandler  : public cmop::IHTTPHandler {
 	 * \param   response : the response
 	 * \return  NPT_SUCCES else Neptune code error .
 	*/
-	virtual void OnDelete(NPT_HttpRequest& request,
+	void OnDelete(NPT_HttpRequest& request,
 			const NPT_HttpRequestContext& context,
-			NPT_HttpResponse& response) = 0;
-
-	/**
-	 * \brief  this function Return the string in the URL representing the '*'  .
-	 * \return  NPT_String : the Asterisk Delta found in the URL
-	*/
-	NPT_String &getDelta();
-
-protected:
-	/** \brief the Asterisk Delta found in the URL. */
-	NPT_String m_delta;
-	/** \brief the Handler segment. */
-	NPT_String m_segment;
-	/** \brief  True when HTTP Method POSt is enabled .. */
-	METHODS m_methodsSupportMask;
+			NPT_HttpResponse& response)  {/* NOT Supported */};
 };
 }
-#endif /* IHTTPASTERISKHANDLER_H_ */
+#endif /* IHTTPBRIDGEHANDLER_H_ */

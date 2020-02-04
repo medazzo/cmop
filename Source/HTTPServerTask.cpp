@@ -8,15 +8,21 @@
 
 #include "HTTPServerTask.h"
 #include "HTTPUtility.h"
-#include "IHTTPHandler.h"
-#include "IHTTPEventHandler.h"
+//#include "IHTTPEventHandler.h"
 
 #include "Neptune.h"
 NPT_SET_LOCAL_LOGGER("cmop.server.task")
 
-HTTPServerTask::HTTPServerTask(NPT_InputStreamReference& input,
-		NPT_OutputStreamReference& output, NPT_HttpRequestContext* context,
-		HTTPServer *server) :
+namespace cmop
+{
+
+/*----------------------------------------------------------------------
+|   HTTPServerTask::HTTPServerTask
++---------------------------------------------------------------------*/
+HTTPServerTask::HTTPServerTask(	::NPT_InputStreamReference& input,
+										::NPT_OutputStreamReference& output,
+										::NPT_HttpRequestContext* context,
+										HTTPServer *server) :
 		NPT_Thread() {
 	m_server = server;
 	m_input = input;
@@ -25,13 +31,22 @@ HTTPServerTask::HTTPServerTask(NPT_InputStreamReference& input,
 	m_running = true;
 	m_status = new NPT_SharedVariable(1);
 }
+
+/*----------------------------------------------------------------------
+|   HTTPServerTask::~HTTPServerTask
++---------------------------------------------------------------------*/
 HTTPServerTask::~HTTPServerTask() {
 	NPT_LOG_INFO( "## destructor  ");
 	this->Stop();
 	delete m_status;
 }
-void HTTPServerTask::setData(NPT_InputStreamReference& input,
-		NPT_OutputStreamReference& output, NPT_HttpRequestContext* context) {
+
+/*----------------------------------------------------------------------
+|   HTTPServerTask::setData
++---------------------------------------------------------------------*/
+void HTTPServerTask::setData(	NPT_InputStreamReference& input,
+									NPT_OutputStreamReference& output,
+									NPT_HttpRequestContext* context) {
 	if (IsIdle()) {
 		this->m_context = context;
 		this->m_input = input;
@@ -41,6 +56,10 @@ void HTTPServerTask::setData(NPT_InputStreamReference& input,
 		NPT_LOG_FATAL("Busy Task , data will not be updated !");
 	}
 }
+
+/*----------------------------------------------------------------------
+|   HTTPServerTask::backToWork
++---------------------------------------------------------------------*/
 void HTTPServerTask::backToWork() {
 	if (IsIdle()) {
 		m_status->SetValue(1);
@@ -49,12 +68,20 @@ void HTTPServerTask::backToWork() {
 		NPT_LOG_FATAL("Busy Task , data will not be updated !");
 	}
 }
+
+/*----------------------------------------------------------------------
+|   HTTPServerTask::backToWork
++---------------------------------------------------------------------*/
 bool HTTPServerTask::IsIdle() {
 	if (m_status->GetValue() == 0) //idle
 		return true;
 	else
 		return false;
 }
+
+/*----------------------------------------------------------------------
+|   HTTPServerTask::Stop
++---------------------------------------------------------------------*/
 void HTTPServerTask::Stop() {
 	if(m_running)
 	{
@@ -68,33 +95,41 @@ void HTTPServerTask::Stop() {
 		NPT_LOG_WARNING("Task is Already Stopped ! ");
 	}
 }
+
+/*----------------------------------------------------------------------
+|   HTTPServerTask::Run
++---------------------------------------------------------------------*/
 void HTTPServerTask::Run() {
 	NPT_LOG_INFO_1( "HTTPServerTask is launched !! %d", m_status->GetValue());
 	do {
 		m_status->WaitWhileEquals(0); //has nothing to do
 		if (m_running) {
-			NPT_LOG_INFO_1("[task : %ld] : task Begin of the Run .",
+			NPT_LOG_INFO_1("[task : %llu] : task Begin of the Run .",
 					this->GetCurrentThreadId());
 			this->RespondToClient();
-			NPT_LOG_INFO_1("[task : %ld] : task End   of the Run .",
+			NPT_LOG_INFO_1("[task : %llu] : task End   of the Run .",
 					this->GetCurrentThreadId());
-			NPT_LOG_INFO_2("[task : %ld] : Backing TO idle %d .",
+			NPT_LOG_INFO_2("[task : %llu] : Backing TO idle %d .",
 							this->GetCurrentThreadId(),m_status->GetValue());
 
-			NPT_LOG_INFO_1("[task : %ld] : task End   of the Run .",
+			NPT_LOG_INFO_1("[task : %llu] : task End   of the Run .",
 								this->GetCurrentThreadId());
 			//back to idle status
 			m_status->SetValue(0);
 
-			NPT_LOG_INFO_1( "[task : %ld] : Now we are idle , will seek new data to process from Server  .",
+			NPT_LOG_INFO_1( "[task : %llu] : Now we are idle , will seek new data to process from Server  .",
 											this->GetCurrentThreadId());
 			m_server->ProcessClientData(this);
 
 
 		}
 	} while (m_running);
-	NPT_LOG_WARNING_1( " Task [%ld] is Stopped !! ",this->GetCurrentThreadId());
+	NPT_LOG_WARNING_1( " Task [%llu] is Stopped !! ",this->GetCurrentThreadId());
 }
+
+/*----------------------------------------------------------------------
+|   HTTPServerTask::RespondToClient
++---------------------------------------------------------------------*/
 NPT_Result HTTPServerTask::RespondToClient() {
 	NPT_HttpRequest* request;
 	NPT_HttpResponse* response = NULL;
@@ -234,4 +269,5 @@ end:
 endEventing:
 	delete response;
 	return result;
+}
 }

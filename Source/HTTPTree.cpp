@@ -6,46 +6,54 @@
  *  \author Azzouni Mohamed
 */
 
-#include "HTTPUtility.h"
 #include "HTTPTree.h"
-
+#include "HTTPNode.h"
 #include "Neptune.h"
+
 NPT_SET_LOCAL_LOGGER("cmop.server.tree")
 
-cmop::HTTPTree::HTTPTree()
+namespace cmop
 {
-	m_root = NULL;
-}
-cmop::HTTPTree::HTTPTree(cmop::IHTTPHandler *content)
-{
-	m_root = new HTTPNode(content);
-}
-cmop::HTTPTree::HTTPNode *
-cmop::HTTPTree::getRoot()
-{
-	return m_root;
-}
-cmop::HTTPTree::~HTTPTree()
+/*----------------------------------------------------------------------
+|   HTTPTree::~HTTPTree
++---------------------------------------------------------------------*/
+HTTPTree::~HTTPTree()
 {
 	delete m_root;
 }
-void cmop::HTTPTree::setRoot(cmop::IHTTPHandler *root)
+
+/*----------------------------------------------------------------------
+|   HTTPTree::HTTPTree
++---------------------------------------------------------------------*/
+HTTPTree::HTTPTree(IHTTPHandler *content)
 {
-	m_root = new cmop::HTTPTree::HTTPNode(root);
+	m_root = new HTTPNode(content);
 }
-bool cmop::HTTPTree::FindChildNodeOnTree(NPT_List<NPT_String> Segments,
-								   cmop::IHTTPHandler *&found)
+
+/*----------------------------------------------------------------------
+|   HTTPTree::~getRoot
++---------------------------------------------------------------------*/
+HTTPNode * HTTPTree::getRoot()
+{
+	return m_root;
+}
+
+/*----------------------------------------------------------------------
+|   HTTPTree::FindChildNodeOnTree
++---------------------------------------------------------------------*/
+bool HTTPTree::FindChildNodeOnTree(NPT_List<NPT_String> Segments,IHTTPHandler* found )
 {
 	NPT_LOG_INFO("Fetching on Tree !");
 	HTTPNode *t = m_root;
-	NPT_List<NPT_String>::Iterator it = Segments.GetFirstItem();
-	NPT_String segment = *it;
+	::NPT_List<NPT_String>::Iterator it = Segments.GetFirstItem();
+	::NPT_String segment = *it;
 	bool fd = false;
 	int count = 0;
 
 	if (t->operator==(segment))
 	{
 		NPT_LOG_FINE_2( "Fetching on Tree : segment[%d]: '%s'  found >>  on root !", count, segment.GetChars());
+		found = t->m_node;
 		fd = true;
 		it++;
 	}
@@ -60,111 +68,23 @@ bool cmop::HTTPTree::FindChildNodeOnTree(NPT_List<NPT_String> Segments,
 		count++;
 		segment = *it;
 		NPT_LOG_FINE_2( "Fetching on Tree for segment[%d]: '%s' !", count, segment.GetChars());
+		NPT_LOG_INFO_3("Fetching on Tree : segment[%d]: '%s'  searching on children of '%s' !",
+				  count, segment.GetChars(), t->getNode()->getSegment() );
+		fd = t->FindSegmentChildNode(segment, t);
+		if (fd)
 		{
-			NPT_LOG_INFO_3("Fetching on Tree : segment[%d]: '%s'  searching on children of '%s' !",
-					  count, segment.GetChars(), t->getNode()->getSegment().GetChars());
-			fd = t->FindSegmentChildNode(segment, t);
-			if (fd)
-			{
-				NPT_LOG_FINE_2( "Fetching on Tree : segment[%d]: '%s'  found >>  on a children !", count, segment.GetChars());
-				found = t->m_node;
-				fd = true;
-				it++;
-			}
-			else
-			{
-				fd = false;
-				it++;
-				return fd;
-			}
+			NPT_LOG_FINE_2( "Fetching on Tree : segment[%d]: '%s'  found >>  on a children !", count, segment.GetChars());
+			found = t->m_node;
+			fd = true;
+			it++;
+		}
+		else
+		{
+			fd = false;
+			it++;
+			return fd;
 		}
 	}
 	return fd;
 }
-
-cmop::HTTPTree::HTTPNode::~HTTPNode()
-{
-	if (m_node)
-		delete m_node;
-	HTTPNode *t = NULL;
-	for (NPT_Cardinal i = 0; i < m_childrens->GetItemCount(); i++)
-	{
-		m_childrens->Get(i, t);
-		if (t)
-		{
-			delete t;
-		}
-	}
-	m_childrens->Clear();
-	delete m_childrens;
-}
-cmop::HTTPTree::HTTPNode::HTTPNode()
-{
-	m_node = NULL;
-	m_childrens = new NPT_List<cmop::HTTPTree::HTTPNode *>();
-}
-cmop::HTTPTree::HTTPNode::HTTPNode(cmop::IHTTPHandler *node)
-{
-	m_node = node;
-	m_childrens = new NPT_List<cmop::HTTPTree::HTTPNode *>();
-}
-bool cmop::HTTPTree::HTTPNode::operator==(const cmop::HTTPTree::HTTPNode &other)
-{
-	return (m_node == other.m_node) ? true : false;
-}
-bool cmop::HTTPTree::HTTPNode::operator==(const cmop::HTTPTree::HTTPNode *other)
-{
-	return (m_node == other->m_node) ? true : false;
-}
-bool cmop::HTTPTree::HTTPNode::operator==(const NPT_String &other)
-{
-	return (*(m_node) == other) ? true : false;
-}
-cmop::HTTPTree::HTTPNode *
-cmop::HTTPTree::HTTPNode::AddChildNode(cmop::IHTTPHandler *child)
-{
-	cmop::HTTPTree::HTTPNode *ch = new cmop::HTTPTree::HTTPNode(child);
-	if (child != NULL)
-	{
-		if (child->GetMyHandlerType() == HANDLER_ASTERISK)
-			m_childrens->Insert(m_childrens->GetLastItem(), ch);
-		else
-			m_childrens->Insert(m_childrens->GetFirstItem(), ch);
-	}
-	else
-	{
-		NPT_LOG_FATAL(" NULL Handle : will not be Added in Tree !");
-	}
-	return ch;
-}
-cmop::HTTPTree::HTTPNode *
-cmop::HTTPTree::HTTPNode::getChildNode(int nIndex)
-{
-	cmop::HTTPTree::HTTPNode *t = NULL;
-	m_childrens->Get(nIndex, t);
-	return t;
-}
-NPT_Cardinal cmop::HTTPTree::HTTPNode::getChildCount()
-{
-	return m_childrens->GetItemCount();
-}
-bool HTTPTree::HTTPNode::FindSegmentChildNode(NPT_String segment,
-											  cmop::HTTPTree::HTTPNode *&found)
-{
-	HTTPNode *t = NULL;
-	for (NPT_Cardinal i = 0; i < m_childrens->GetItemCount(); i++)
-	{
-		m_childrens->Get(i, t);
-		if (t->operator==(segment))
-		{
-			found = t;
-			return true;
-		}
-	}
-	return false;
-}
-cmop::IHTTPHandler *
-cmop::HTTPTree::HTTPNode::getNode()
-{
-	return m_node;
 }

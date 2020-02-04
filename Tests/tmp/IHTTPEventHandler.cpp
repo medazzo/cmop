@@ -11,21 +11,21 @@
 
 NPT_SET_LOCAL_LOGGER("cmop.server.handler.event")
 
-cmop::IHTTPEventHandler::~IHTTPEventHandler() {
+IHTTPEventHandler::~IHTTPEventHandler() {
 	m_WaitingClient->Clear();
 	delete m_WaitingClient;
 }
 
-cmop::IHTTPEventHandler::IHTTPEventHandler(const char* segment, METHODS methodsSupportMask) :
+IHTTPEventHandler::IHTTPEventHandler(const char* segment, METHODS methodsSupportMask) :
 		IHTTPHandler(segment,m_methodsSupportMask) {
 	UNUSED(methodsSupportMask);
 	UNUSED(segment);
-	m_WaitingClient = new NPT_List<cmop::HTTPServerTaskData*>();
+	m_WaitingClient = new NPT_List<HTTPServerTaskData*>();
 	m_sendnAnEvent = false ;
 }
 
 NPT_Result
-cmop::IHTTPEventHandler::PushWaitingclient(NPT_InputStreamReference m_input,
+IHTTPEventHandler::PushWaitingclient(NPT_InputStreamReference m_input,
 							NPT_OutputStreamReference m_output,NPT_HttpRequestContext* m_context,NPT_HttpRequest* request) {
 	if ( m_sendnAnEvent == false ){
 		m_WaitingClient->Add( new HTTPServerTaskData(m_input,m_output,m_context,request));
@@ -41,7 +41,7 @@ cmop::IHTTPEventHandler::PushWaitingclient(NPT_InputStreamReference m_input,
 
 
 void
-cmop::IHTTPEventHandler::NotifyWaitingClients() {
+IHTTPEventHandler::NotifyWaitingClients() {
 	if ( m_sendnAnEvent == false )
 	{
 		//send client responses ;
@@ -128,7 +128,7 @@ cmop::IHTTPEventHandler::NotifyWaitingClients() {
 }
 
 void
-cmop::IHTTPEventHandler::ArmEventToBlockNewClients() {
+IHTTPEventHandler::ArmEventToBlockNewClients() {
 	m_sendnAnEvent = false ;
 }
 
