@@ -91,7 +91,7 @@ public:
 	 * \param   segment : The String segment responsible for this handler .
 	 * \param   methodsSupportMask The mask containing supported Http Method
 	*/
-	IHTTPHandler(    char * segment,
+	IHTTPHandler( const   char * segment,
                      METHODS methodsSupportMask = SUPPORT_NONE);
 	/**
 	 * \brief   instantiate a static HTTP Handler.
@@ -195,6 +195,8 @@ protected:
 class ICServer
 {
 public:
+
+	virtual ~ICServer(){};
 	/**
 	 * \brief   Start a server
 	*/
@@ -209,10 +211,10 @@ public:
 	virtual Result Stop() = 0 ;
 
 	/**
-	 * \brief Set the root Handler to be used by the server.
-	 * \param  treeHandler the  Tree pointer to be settled.
+	 * \brief Add a Handler to be used by the server.
+	 * \param  handler pointer to be used.
 	*/
-	virtual Result setRoot( IHTTPHandler *treeHandler) = 0 ;
+	virtual Result AddHandler( IHTTPHandler *handler) = 0 ;
 };
 /**
  * \class CMOP Server Factory

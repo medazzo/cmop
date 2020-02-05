@@ -44,27 +44,28 @@ void SetAsterisk(cmop::ICServer * server){
 	AstrixHandler * astrix = new AstrixHandler();
 	ErrorHandler *	error = new ErrorHandler("error");
 	/*
-	 *                     root
-	 *                    /   |
-	 *           security      *
-	 *                          \
-	 *                         error
+	 *                ---- error
+	 *                ---- security
+	 *                ---- root
+	 *                ---- *
 	 */
-	root->AddChildNode(astrix)->AddChildNode(error);
-	tree->getRoot()->AddChildNode(security);
-	/* Setting Server Tree and starting  */
-	server->setRoot(root);
+	server->AddHandler(astrix),
+	server->AddHandler(error);
+	server->AddHandler(security);
+	server->AddHandler(root);
 }
 void SetTT(cmop::ICServer * server){
 	RootHandler * root = new RootHandler("root");
-	OnReadHandler *	security = new OnReadHandler("security");
+	OnReadHandler *	voila = new OnReadHandler("/api/voila/security");
 	ErrorHandler *	error = new ErrorHandler("error");
 	/*
-	 *    root ->security -> error -> security
+	 *                ---- voila
+	 *                ---- error
+	 *                ---- root
 	 */
-	root->AddChildNode(security)->AddChildNode(error)->AddChildNode(security);
-	/* Setting Server Tree and starting  */
-	server->setRoot(root);
+	server->AddHandler(voila);
+	server->AddHandler(error);
+	server->AddHandler(root);
 }
 int
 main(int  argc, char**  argv )

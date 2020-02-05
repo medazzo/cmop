@@ -28,7 +28,7 @@ NPT_HttpServer(listen_address,listen_port) {
     m_MaxTasks = max_threads_workers;
 	m_DataTasksWaiting = new NPT_List<HTTPServerTaskData*>();
 	m_DataTasksWorkers = new NPT_List<HTTPServerTask*>();
-
+	m_childrens = new NPT_List<HTTPNode *>();
 	{
 		NPT_AutoLock lock(m_LoopLock);
 		m_loop = true;
@@ -87,11 +87,20 @@ HTTPTree* HTTPServer::getTreeHandler() {
 /*----------------------------------------------------------------------
 |   HTTPServer::setTreeHandler
 +---------------------------------------------------------------------*/
-Result HTTPServer::setRoot(IHTTPHandler* treeHandler) {
-	if ( this->treeHandler != NULL)
-		delete this->treeHandler;
-	this->treeHandler =  new HTTPTree(treeHandler);
-	return Result::CMOP_SUCCESS;
+Result HTTPServer::AddHandler(IHTTPHandler* handler){
+	if (handler != NULL)
+	{
+		HTTPNode *ch = new HTTPNode(handler);
+		if (handler->GetMyHandlerType() == HANDLER_ASTERISK)
+			m_childrens->Insert(m_childrens->GetLastItem(), ch);
+		else
+			m_childrens->Insert(m_childrens->GetFirstItem(), ch);
+	}
+	else
+	{
+		NPT_LOG_FATAL(" NULL Handle : will not be Added in Tree !");
+	}
+	return CMOP_SUCCESS;
 }
 
 /*----------------------------------------------------------------------

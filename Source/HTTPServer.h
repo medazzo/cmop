@@ -80,10 +80,10 @@ public:
 	::NPT_SharedVariable* getSharedEventing();
 
 	/**
-	 * \brief Set the tree Handler to be used by the server.
-	 * \param  treeHandler the  Tree pointer to be settled.
+	 * \brief Add a Handler to be used by the server.
+	 * \param  handler pointer to be used.
 	*/
-	Result setRoot(IHTTPHandler* treeHandler);
+	Result AddHandler(IHTTPHandler* handler);
 
 private:
 	/**
@@ -122,6 +122,8 @@ private:
 	bool m_loop;
 	/** \brief  Mutex to lock/unlock access to m_loop variable.*/
 	::NPT_Mutex m_LoopLock;
+	/** \brief   list of pointer of children of this node. */
+	::NPT_List<HTTPNode *> *m_childrens;
 	/** \brief  List of Task manager Data waiting to be executed.*/
 	::NPT_List<HTTPServerTaskData*> *m_DataTasksWaiting;
 	 /** \brief  List of Task worker ready to execute or already executing some data .*/

@@ -38,7 +38,7 @@ IHTTPHandler::~IHTTPHandler()
 /*----------------------------------------------------------------------
 |   IHTTPHandler::IHTTPHandler
 +---------------------------------------------------------------------*/
-IHTTPHandler::IHTTPHandler( char *  segment, METHODS   methodsSupportMask) :
+IHTTPHandler::IHTTPHandler(const char *  segment, METHODS   methodsSupportMask) :
     m_methodsSupportMask(methodsSupportMask)
 {
 	memset(m_segment, 0, sizeof(HTTP_MAX_SEGMENT_LENGTH));
