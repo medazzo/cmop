@@ -47,11 +47,10 @@ public:
 	bool operator==(const HTTPNode& other);
 
 	/**
-	 * \brief   operator == used to compare
-	 * \param   other : the other Http Node
-	 * \return  true if segment on two node is equal else false.
+	 * \brief   get the handler of the Node
+	 * \return  IHTTPHandler the handler of the node
 	*/
-	bool operator==(const HTTPNode* other);
+	IHTTPHandler * getHandler();
 
 	/**
 	 * \brief   operator == used to compare
@@ -59,27 +58,12 @@ public:
 	 * \return  true if segment on two node is equal else false.
 	*/
 	bool operator==(const ::NPT_String& other);
-
-
 	/**
-	 * \brief   Add children node on this Node
-	 * \param   child :the content of the node type of IHTTP_Handler
-	 * \return  pointer on the created node else NULL.
+	 * \brief   StartsWith used to compare
+	 * \param   other :the other Http Node
+	 * \return  true if segment on two node is equal else false.
 	*/
-	HTTPNode * AddChildNode(IHTTPHandler *child);
-
-	/**
-	 * \brief   get the children node at index
-	 * \param   nIndex : children node  index
-	 * \return  pointer on the child node else NULL.
-	*/
-	HTTPNode* getChildNode(int nIndex);
-
-	/**
-	 * \brief   get the children count
-	 * \return  the children nodes count
-	*/
-	NPT_Cardinal getChildCount();
+	bool StartsWith(const NPT_String &other);
 
 	/**
 	 * \brief   search segment on children nodes
@@ -109,8 +93,6 @@ public:
 public:
 	/** \brief   pointer to the content of the node type of IHTTP_Handler*/
 	IHTTPHandler *m_node;
-	/** \brief   list of pointer of children of this node. */
-	::NPT_List<HTTPNode *> *m_childrens;
 };
 }
 #endif /* HTTPNODE_H_ */

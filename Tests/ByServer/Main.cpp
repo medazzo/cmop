@@ -39,10 +39,10 @@ static void sig_term(int sig) {
 +---------------------------------------------------------------------*/
 
 void SetAsterisk(cmop::ICServer * server){
-	RootHandler * root = new RootHandler("root");
-	OnReadHandler *	security = new OnReadHandler("security");
+	OnAllHandler * root = new OnAllHandler("/root");
+	OnReadHandler *	security = new OnReadHandler("/security");
 	AstrixHandler * astrix = new AstrixHandler();
-	ErrorHandler *	error = new ErrorHandler("error");
+	ErrorHandler *	error = new ErrorHandler("/error");
 	/*
 	 *                ---- error
 	 *                ---- security
@@ -55,9 +55,9 @@ void SetAsterisk(cmop::ICServer * server){
 	server->AddHandler(root);
 }
 void SetTT(cmop::ICServer * server){
-	RootHandler * root = new RootHandler("root");
+	OnAllHandler * root = new OnAllHandler("/root");
 	OnReadHandler *	voila = new OnReadHandler("/api/voila/security");
-	ErrorHandler *	error = new ErrorHandler("error");
+	ErrorHandler *	error = new ErrorHandler("/error");
 	/*
 	 *                ---- voila
 	 *                ---- error
@@ -93,8 +93,8 @@ main(int  argc, char**  argv )
 	signal(SIGTERM,sig_term);
 
 
-	cmop::ICServer * server = cmop::CSFactory::Instance().getCServer(cmop::IpAddress::Any, 1234 , 3);
-	cmop::ICServer * server2 = cmop::CSFactory::Instance().getCServer(cmop::IpAddress::Any, 7777 , 3);
+	cmop::ICServer * server = cmop::CSFactory::Instance().getCServer(cmop::CMOP_INTERFACE_ANY, 1234 , 3);
+	cmop::ICServer * server2 = cmop::CSFactory::Instance().getCServer(cmop::CMOP_INTERFACE_ANY, 7777 , 3);
 
 	SetAsterisk(server);
 	SetTT(server2);
@@ -129,7 +129,6 @@ main(int  argc, char**  argv )
         	NPT_LOG_INFO("W'll exit . " );
 			server->Stop();
 			server2->Stop();
-			delete server;
 			return 0;
 
         }

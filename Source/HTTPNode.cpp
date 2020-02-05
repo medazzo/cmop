@@ -21,17 +21,6 @@ HTTPNode::~HTTPNode()
 {
 	if (m_node)
 		delete m_node;
-	HTTPNode *t = NULL;
-	for (NPT_Cardinal i = 0; i < m_childrens->GetItemCount(); i++)
-	{
-		m_childrens->Get(i, t);
-		if (t)
-		{
-			delete t;
-		}
-	}
-	m_childrens->Clear();
-	delete m_childrens;
 }
 
 /*----------------------------------------------------------------------
@@ -40,7 +29,6 @@ HTTPNode::~HTTPNode()
 HTTPNode::HTTPNode()
 {
 	m_node = NULL;
-	m_childrens = new NPT_List<HTTPNode *>();
 }
 
 /*----------------------------------------------------------------------
@@ -49,7 +37,6 @@ HTTPNode::HTTPNode()
 HTTPNode::HTTPNode(IHTTPHandler *node)
 {
 	m_node = node;
-	m_childrens = new NPT_List<HTTPNode *>();
 }
 
 /*----------------------------------------------------------------------
@@ -63,56 +50,18 @@ bool HTTPNode::operator==(const HTTPNode &other)
 /*----------------------------------------------------------------------
 |   HTTPNode::operator==
 +---------------------------------------------------------------------*/
-bool HTTPNode::operator==(const HTTPNode *other)
-{
-	if (other== NULL || other->m_node == NULL)
-		return false ;
-	IHTTPHandler* hd = other->m_node;
-	const char* oth = (const char*)hd->getSegment();
-	return (NPT_String(m_node->getSegment()).Compare(oth, false) == 0 ) ? true : false;
-}
-
-/*----------------------------------------------------------------------
-|   HTTPNode::operator==
-+---------------------------------------------------------------------*/
 bool HTTPNode::operator==(const NPT_String &other)
 {
 	return (NPT_String(m_node->getSegment()).Compare(other.GetChars()) == 0 ) ? true : false;
 }
-
 /*----------------------------------------------------------------------
-|   HTTPNode::AddChildNode
+|   HTTPNode::operator==
 +---------------------------------------------------------------------*/
-HTTPNode * HTTPNode::AddChildNode(IHTTPHandler *child)
+bool HTTPNode::StartsWith(const NPT_String &other)
 {
-	HTTPNode *ch = new HTTPNode(child);
-	if (child != NULL)
-	{
-		if (child->GetMyHandlerType() == HANDLER_ASTERISK)
-			m_childrens->Insert(m_childrens->GetLastItem(), ch);
-		else
-			m_childrens->Insert(m_childrens->GetFirstItem(), ch);
-	}
-	else
-	{
-		NPT_LOG_FATAL(" NULL Handle : will not be Added in Tree !");
-	}
-	return ch;
+	return (NPT_String(m_node->getSegment()).StartsWith(other.GetChars()) == 0 ) ? true : false;
 }
 
-/*----------------------------------------------------------------------
-|   HTTPNode::getChildNode
-+---------------------------------------------------------------------*/
-HTTPNode * HTTPNode::getChildNode(int nIndex)
-{
-	HTTPNode *t = NULL;
-	m_childrens->Get(nIndex, t);
-	return t;
-}
-NPT_Cardinal HTTPNode::getChildCount()
-{
-	return m_childrens->GetItemCount();
-}
 
 /*----------------------------------------------------------------------
 |   HTTPNode::SetupResponse
@@ -149,24 +98,6 @@ NPT_Result HTTPNode::SetupResponse(::NPT_HttpRequest&              request,
 	}
 }
 
-/*----------------------------------------------------------------------
-|   HTTPNode::FindSegmentChildNode
-+---------------------------------------------------------------------*/
-bool HTTPNode::FindSegmentChildNode(NPT_String segment,
-											  HTTPNode *&found)
-{
-	HTTPNode *t = NULL;
-	for (NPT_Cardinal i = 0; i < m_childrens->GetItemCount(); i++)
-	{
-		m_childrens->Get(i, t);
-		if (t->operator==(segment))
-		{
-			found = t;
-			return true;
-		}
-	}
-	return false;
-}
 
 /*----------------------------------------------------------------------
 |   IHTTPHandler::getNode

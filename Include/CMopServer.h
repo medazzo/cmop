@@ -52,6 +52,17 @@ typedef enum
    CMOP_NO_SUCH_ITEM_ERROR,
    CMOP_NOTDEFINED_RESULT
 }Result;
+
+
+/**
+  * \brief enumeration that define results
+*/
+typedef enum
+{
+   CMOP_INTERFACE_ANY   = 0,
+   CMOP_INTERFACE_LOOPBACK,
+   CMOP_INTERFACE_NONE
+}IpTypes;
 /**
  * \class CMOP IpAddress
  * \brief The Ip Address Class .
@@ -59,22 +70,21 @@ typedef enum
 class IpAddress
 {
 public:
-	// class members
-	static IpAddress Any;
-	static IpAddress Loopback;
 
 	// constructors
-	IpAddress():m_Address(0) {};
-	IpAddress(unsigned long address):m_Address(address) {};
-	IpAddress(unsigned char a, unsigned char b, unsigned char c, unsigned char d){
+	IpAddress(IpTypes type):m_Address(0),m_type(type)  {};
+	IpAddress(unsigned long address):m_Address(address),m_type(CMOP_INTERFACE_NONE) {};
+	IpAddress(unsigned char a, unsigned char b, unsigned char c, unsigned char d) {
 		m_Address = (((unsigned long)a) << 24) |
 					(((unsigned long)b) << 16) |
 					(((unsigned long)c) << 8) |
 					(((unsigned long)d));
+		m_type= CMOP_INTERFACE_NONE;
 	};
 
     // members
-    unsigned long m_Address;
+	unsigned long m_Address;
+	IpTypes m_type;
 };
 
 
@@ -215,6 +225,11 @@ public:
 	 * \param  handler pointer to be used.
 	*/
 	virtual Result AddHandler( IHTTPHandler *handler) = 0 ;
+	/**
+	 * \brief Add a Handler to be used by the server.
+	 * \param  handler pointer to be used.
+	*/
+	// todo virtual Result SetupDefaultHtml( const char * 403_html,  const char * 404_html, const char * 500_html) = 0 ;
 };
 /**
  * \class CMOP Server Factory

@@ -11,7 +11,7 @@
 
 #include "Neptune.h"
 
-#include "HTTPTree.h"
+#include "HTTPNode.h"
 #include "HTTPServerTaskData.h"
 #include "HTTPServerTask.h"
 
@@ -60,18 +60,17 @@ public:
 
 	/**
 	 * \brief  used to transfrom URL to a list of segment .
-	 *      UrlPath has the format /root/a/b/c/d/g/
-	*      will be transformed to a list {'root','a','b','c','d','g'}.
+	 * Example :
+	 *  - Static Url Path like  '/root/a/b/c/'
+	 *      will be transformed to a list with one element {' /root/a/b/c/'}.
+	 *
+	 *  - Variable Url Path like '/root/a/b/c/{id}/g/' where '{id}' is a special to refer id value
+	 *      will be transformed to a list {' /root/a/b/c/','{id}','g'}.
+	 *
 	 * \return  NPT_SUCCES else Neptune code error .
 	*/
 	NPT_Result CalculateQueryPath(::NPT_String UrlPath,
 			::NPT_List<NPT_String>& path);
-
-	/**
-	 * \brief  Get Rest Tree Handler of the Server [could be NULL].
-	 * \return pointer on HTTPTree class
-	*/
-	HTTPTree* getTreeHandler();
 
 	/**
 	 * \brief  Get the Server Shared Eventing Variable used to inform workers threads of eventing.
@@ -84,6 +83,14 @@ public:
 	 * \param  handler pointer to be used.
 	*/
 	Result AddHandler(IHTTPHandler* handler);
+
+	/**
+	 * \brief   search segments list on tree
+	 * \param   Segments : segments List
+	 * \param   found pointer on node , Update it with pointer if found
+	 * \return  True if segment is found and found id updated else False.
+	*/
+	bool FindChildNode(NPT_List<NPT_String> Segments, HTTPNode* &found);
 
 private:
 	/**
@@ -116,8 +123,6 @@ private:
 	*/
 	bool isLoop();
 
-	/** \brief  Tree Handler pointer of the Server .*/
-	HTTPTree * treeHandler;
 	/** \brief  boolean variable used to check if sever is running (looping)*/
 	bool m_loop;
 	/** \brief  Mutex to lock/unlock access to m_loop variable.*/

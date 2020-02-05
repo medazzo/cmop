@@ -169,9 +169,9 @@ NPT_Result HTTPServerTask::RespondToClient() {
 			path);
 	NPT_LOG_INFO_2( "CalculateQueryPath returned %d (%s)", result,
 			NPT_ResultText(result));
-	if (!NPT_FAILED(result) && (this->m_server->getTreeHandler() != NULL)) {
+	if (!NPT_FAILED(result) ) {
 		//Search for handler correspondant to the PATH
-		resultsearch = this->m_server->getTreeHandler()->FindChildNodeOnTree(
+		resultsearch = this->m_server->FindChildNode(
 				path, found);
 		NPT_LOG_INFO_2( "FindChildNodeOnTree returned %d (%s)", result,
 				NPT_ResultText(result));

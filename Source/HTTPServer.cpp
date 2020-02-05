@@ -10,7 +10,7 @@
 #include "HTTPUtility.h"
 #include "HTTPServerTaskData.h"
 #include "HTTPServerTask.h"
-#include "HTTPTree.h"
+
 
 #include "Neptune.h"
 NPT_SET_LOCAL_LOGGER("cmop.server")
@@ -24,7 +24,6 @@ namespace cmop
 HTTPServer::HTTPServer(NPT_IpAddress listen_address,NPT_UInt16 listen_port, NPT_UInt16 max_threads_workers) :
 NPT_HttpServer(listen_address,listen_port) {
 
-	treeHandler = NULL;
     m_MaxTasks = max_threads_workers;
 	m_DataTasksWaiting = new NPT_List<HTTPServerTaskData*>();
 	m_DataTasksWorkers = new NPT_List<HTTPServerTask*>();
@@ -40,12 +39,10 @@ NPT_HttpServer(listen_address,listen_port) {
 |   HTTPServer::~HTTPServer
 +---------------------------------------------------------------------*/
 HTTPServer::~HTTPServer() {
-	NPT_LOG_INFO("## destructing  ...  ");
+	NPT_LOG_INFO("## destroyer  ...  ");
 	if (isLoop())
 		this->Stop();
 
-	if(treeHandler)
-		delete treeHandler;
 
     for(NPT_Cardinal i = 0;i<m_DataTasksWorkers->GetItemCount();i++)
 	{
@@ -77,13 +74,37 @@ bool HTTPServer::isLoop() {
 	}
 }
 
-/*----------------------------------------------------------------------
-|   HTTPServer::getTreeHandler
-+---------------------------------------------------------------------*/
-HTTPTree* HTTPServer::getTreeHandler() {
-	return treeHandler;
-}
 
+/*----------------------------------------------------------------------
+|   HTTPServer::FindChildNodeOnTree
++---------------------------------------------------------------------*/
+bool HTTPServer::FindChildNode(NPT_List<NPT_String> Segments,HTTPNode* &found )
+{
+	NPT_LOG_INFO("Fetching on Serving handlers ");
+	::NPT_List<NPT_String>::Iterator it = Segments.GetFirstItem();
+	::NPT_List<HTTPNode*>::Iterator t = m_childrens->GetFirstItem();
+	::NPT_String segment = *it;
+
+	while (t)
+	{
+		HTTPNode* nt = *t;
+		// todo deal with start with and loop into  Segments
+		NPT_LOG_INFO_3("Fetching on Tree : segment[%d]: '%s'  searching on children of '%s' !",
+				Segments.GetItemCount(), segment.GetChars(), nt->getNodeHandler()->getSegment() );
+		if (nt->operator==(segment))
+		{
+			NPT_LOG_FINE_1( "Fetching on Tree : segment  '%s'  found >>  on root !",  segment.GetChars());
+			found = *t;
+			return true;
+		}
+		// next Node
+		t++;
+	}
+
+	NPT_LOG_SEVERE_2("Fetching on Tree : segment[%d]: '%s' NOT found  !", Segments.GetItemCount(), segment.GetChars());
+	return false;
+
+}
 /*----------------------------------------------------------------------
 |   HTTPServer::setTreeHandler
 +---------------------------------------------------------------------*/
@@ -108,12 +129,11 @@ Result HTTPServer::AddHandler(IHTTPHandler* handler){
 +---------------------------------------------------------------------*/
 NPT_Result HTTPServer::CalculateQueryPath(NPT_String UrlPath,
 		NPT_List<NPT_String>& path) {
-	if (UrlPath.StartsWith("/")) {
-		path = UrlPath.Right(UrlPath.GetLength() - 1).Split("/");
-	} else {
-		path = UrlPath.Split("/");
-		NPT_LOG_INFO_2( "%s >> %d ", UrlPath.GetChars(), path.GetItemCount());
-	}
+	NPT_LOG_INFO_1( "CalculateQueryPath returned (%s)", UrlPath.GetChars());
+	// now managing only static path
+	path.Add(UrlPath);
+	//todo manage  Variable Url Path like '/root/a/b/c/{id}/g/' where '{id}' is a special to refer id value
+	//     			 will be transformed to a list {' /root/a/b/c/','{id}','g'}.
 	NPT_LOG_INFO_2( " %s >> %d ", UrlPath.GetChars(), path.GetItemCount());
 	return NPT_SUCCESS;
 }
@@ -135,7 +155,7 @@ void HTTPServer::Run() {
 |   HTTPServer::Start
 +---------------------------------------------------------------------*/
 Result HTTPServer::StartServer() {
-	// todo
+	this->Start();
 	return CMOP_SUCCESS;
 }
 /*----------------------------------------------------------------------

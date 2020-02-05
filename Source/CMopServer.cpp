@@ -12,20 +12,13 @@
 #include "HTTPServer.h"
 #include "HTTPServerTaskData.h"
 #include "HTTPServerTask.h"
-#include "HTTPTree.h"
+
 
 
 NPT_SET_LOCAL_LOGGER("cmop.apiserver")
 
 namespace cmop
 {
-
-/*----------------------------------------------------------------------
-|   IpAddress::IpAddress
-+---------------------------------------------------------------------*/
-IpAddress IpAddress::Any = IpAddress();
-IpAddress IpAddress::Loopback = IpAddress(127, 0, 0, 1);
-
 
 /*----------------------------------------------------------------------
 |   IHTTPHandler::~IHTTPHandler
@@ -42,8 +35,9 @@ IHTTPHandler::IHTTPHandler(const char *  segment, METHODS   methodsSupportMask) 
     m_methodsSupportMask(methodsSupportMask)
 {
 	memset(m_segment, 0, sizeof(HTTP_MAX_SEGMENT_LENGTH));
-	NPT_CopyMemory(m_segment, segment, strlen(segment));
-	NPT_LOG_INFO_1( "## constructing  %s  ", m_segment);
+	int len = strlen(segment);
+	NPT_CopyMemory(m_segment, segment, strlen(segment)+1);
+	NPT_LOG_INFO_2( "## constructing %d =>  %s  ",len, m_segment);
 }
 
 /*----------------------------------------------------------------------
@@ -238,10 +232,19 @@ ICServer * CSFactory::getCServer(IpAddress listen_address,
 			   unsigned short listen_port,
 			   unsigned short max_threads_workers)
 {
-	HTTPServer * srv = new HTTPServer(NPT_IpAddress(listen_address.m_Address),
+	NPT_IpAddress adr= NPT_IpAddress::Any;
+	if (listen_address.m_type == CMOP_INTERFACE_LOOPBACK)
+	{
+		adr= NPT_IpAddress::Loopback;
+	}
+	else if (listen_address.m_type == CMOP_INTERFACE_NONE)
+	{
+		adr = NPT_IpAddress(listen_address.m_Address);
+	}
+	HTTPServer * srv = new HTTPServer(adr,
 								  (NPT_UInt16) listen_port,
 								  (NPT_UInt16) max_threads_workers);
-	NPT_LOG_INFO("Server Created ");
+	NPT_LOG_INFO_2("Server Created  @ %s:%d ",adr.ToString().GetChars(),listen_port );
 	// todo ; need to save it in array ?
 	return srv;
 }
