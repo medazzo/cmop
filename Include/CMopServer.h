@@ -9,15 +9,14 @@
 #ifndef CMOPRESTSERVER_H_
 #define CMOPRESTSERVER_H_
 
-namespace cmop
-{
-
-
-class HTTPServer;
 class NPT_HttpRequest;
 class NPT_HttpRequestContext;
 class NPT_HttpResponse;
 
+namespace cmop
+{
+/*!< define default HTTP MACx Segment Length     */
+const int HTTP_MAX_SEGMENT_LENGTH = 256;
 /**
  * \enum METHODS
  * \brief Contains the Value of the Http Method that can be supported by different types of handlers
@@ -37,7 +36,7 @@ SUPPORT_ALL     = SUPPORT_PUT|SUPPORT_GET|SUPPORT_POST|SUPPORT_DELETE	/*!< suppo
 */
 typedef enum  {
 HADNLER_STATIC 		= 0x0,  	/*!< define Static Handler */
-HANDLER_EVENT  		= 0x1000,   /*!< define the Eventing Handler. */
+HANDLER_EVENT  		= 0x1000,   /*!< define the Events Handler. */
 HANDLER_ASTERISK   	= 0x0100 	/*!< define the Asterisk Handler. */
 }HANDLERSTYPES;
 
@@ -50,6 +49,7 @@ typedef enum
    CMOP_SUCCESS   = 0,
    CMOP_ERROR     ,
    CMOP_UNKNOWN_RESULT,
+   CMOP_NO_SUCH_ITEM_ERROR,
    CMOP_NOTDEFINED_RESULT
 }Result;
 /**
@@ -60,13 +60,18 @@ class IpAddress
 {
 public:
 	// class members
-	static const IpAddress Any;
-	static const IpAddress Loopback;
+	static IpAddress Any;
+	static IpAddress Loopback;
 
-	// constructors and destructor
-	IpAddress();
-	IpAddress(unsigned long address);
-	IpAddress(unsigned char a, unsigned char b, unsigned char c, unsigned char d);
+	// constructors
+	IpAddress():m_Address(0) {};
+	IpAddress(unsigned long address):m_Address(address) {};
+	IpAddress(unsigned char a, unsigned char b, unsigned char c, unsigned char d){
+		m_Address = (((unsigned long)a) << 24) |
+					(((unsigned long)b) << 16) |
+					(((unsigned long)c) << 8) |
+					(((unsigned long)d));
+	};
 
     // members
     unsigned long m_Address;
@@ -80,6 +85,7 @@ public:
 class IHTTPHandler
 {
 public:
+
 	/**
 	 * \brief   instantiate a static HTTP Handler.
 	 * \param   segment : The String segment responsible for this handler .
@@ -87,7 +93,11 @@ public:
 	*/
 	IHTTPHandler(    char * segment,
                      METHODS methodsSupportMask = SUPPORT_NONE);
-
+	/**
+	 * \brief   Get the Handler Type.
+	 * \return  the Handler Type :HANDLER_ASTERISK.
+	*/
+	virtual HANDLERSTYPES GetMyHandlerType() = 0;
 	/**
 	 * \brief destructor of IHTTP Handler
 	*/
@@ -100,9 +110,9 @@ public:
 	 * \param   response : the response
 	 * \return  NPT_SUCCES else Neptune code error .
 	*/
-	virtual void OnCreate(NPT_HttpRequest &request,
-						  const NPT_HttpRequestContext &context,
-						  NPT_HttpResponse &response) ;
+	virtual void OnCreate(::NPT_HttpRequest &request,
+						  const ::NPT_HttpRequestContext &context,
+						  ::NPT_HttpResponse &response) ;
 
 	/**
 	 * \brief  this function is called when a GET request is arrived and when GET is enabled .
@@ -111,9 +121,9 @@ public:
 	 * \param   response : the response
 	 * \return  NPT_SUCCES else Neptune code error .
 	*/
-	virtual void OnRead(NPT_HttpRequest &request,
-						const NPT_HttpRequestContext &context,
-						NPT_HttpResponse &response) ;
+	virtual void OnRead(::NPT_HttpRequest &request,
+						const ::NPT_HttpRequestContext &context,
+						::NPT_HttpResponse &response) ;
 
 	/**
 	 * \brief  this function is called when a POST request is arrived and when POST is enabled .
@@ -122,9 +132,9 @@ public:
 	 * \param   response : the response
 	 * \return  NPT_SUCCES else Neptune code error .
 	*/
-	virtual void OnUpdate(NPT_HttpRequest &request,
-						  const NPT_HttpRequestContext &context,
-						  NPT_HttpResponse &response) ;
+	virtual void OnUpdate(::NPT_HttpRequest &request,
+						  const ::NPT_HttpRequestContext &context,
+						  ::NPT_HttpResponse &response) ;
 
 	/**
 	 * \brief  this function is called when a DELETE request is arrived and when DELETE is enabled .
@@ -133,15 +143,21 @@ public:
 	 * \param   response : the response
 	 * \return  NPT_SUCCES else Neptune code error .
 	*/
-	virtual void OnDelete(NPT_HttpRequest &request,
-						  const NPT_HttpRequestContext &context,
-						  NPT_HttpResponse &response) ;
+	virtual void OnDelete(::NPT_HttpRequest &request,
+						  const ::NPT_HttpRequestContext &context,
+						  ::NPT_HttpResponse &response) ;
 
 	/**
 	 * \brief get the Handler segment.
-	 * \return  NPT_String segment of the handler.
+	 * \return  char * segment of the handler.
 	*/
 	virtual char * getSegment();
+	/**
+	 * \brief get the HTTP supported Methods of the handler.
+	 * \return  METHODS enum type.
+	*/
+	METHODS getMethods();
+
 
 	/**
 	 * \brief  used to serve file to the client
@@ -152,65 +168,73 @@ public:
 	 * \param   mime_type: the file mime_type
 	 * \return  NPT_SUCCES else Neptune code error .
 	*/
-	Result ServeFile( const NPT_HttpRequest&        request,
-                            const NPT_HttpRequestContext& context,
-                            NPT_HttpResponse&             response,
+	Result ServeFile( const ::NPT_HttpRequest&        request,
+                            const ::NPT_HttpRequestContext& context,
+							::NPT_HttpResponse&             response,
                             const char*                   file_path,
                             const char*  			 	 mime_type);
 
-
-
 protected:
 	/** \brief the Handler segment. */
-	unsigned char m_segment[16];
+	char m_segment[HTTP_MAX_SEGMENT_LENGTH];
 	/** \brief  True when HTTP Method POSt is enabled .. */
 	METHODS m_methodsSupportMask;
 };
 
-/**
- * \class CMOP Server
- * \brief The server Class .
-*/
-class Server
-{
-public:
-	/**
-	 * \brief   instantiate a server without any handler at port and using max threads workers.
-	 * \param   listen_address  ip_adress to listen on for clients
-	 * \param   listen_port  port to listen on for clients , default HTTP_SERVER_PORT_NUMBER
-	 * \param   max_threads_workers : maximum numbers of thread workers : HTTP_DEFAULT_MAX_THREADS_WORKERS
-	*/
-	Server(IpAddress listen_address,
-		   unsigned short listen_port,
-		   unsigned short max_threads_workers);
 
+/**
+ * \class ICServer
+ * \brief The interface of Cmop Server .
+*/
+class ICServer
+{
 	/**
-	 * \brief destructor of Server
+	 * \brief   Start a server
 	*/
-	~Server();
+	virtual Result StartServer() = 0 ;
+
 
 	/**
 	 * \brief  Stop call: used to Stop Server from listen to new clients,
 	 * and all working threads .
 	 * \return  CMOP_Result else CMOP code error .
 	*/
-	Result Stop();
+	virtual Result Stop() = 0 ;
 
 	/**
 	 * \brief Set the root Handler to be used by the server.
 	 * \param  treeHandler the  Tree pointer to be settled.
 	*/
-	void setRoot( IHTTPHandler *treeHandler);
+	virtual Result setRoot( IHTTPHandler *treeHandler) = 0 ;
+};
+/**
+ * \class CMOP Server Factory
+ * \brief The Factory Class .
+*/
+class CSFactory
+{
+public:
+	/**
+	 * \brief   Start a server at address:port and using max threads workers.
+	 * \param   listen_address  ip_adress to listen on for clients
+	 * \param   listen_port  port to listen on for clients , default HTTP_SERVER_PORT_NUMBER
+	 * \param   max_threads_workers : maximum numbers of thread workers : HTTP_DEFAULT_MAX_THREADS_WORKERS
+	*/
+	ICServer * getCServer(IpAddress listen_address,
+			   unsigned short listen_port,
+			   unsigned short max_threads_workers);
+
+public:
+	/**
+	 * \brief Return the factory singleton.
+	 */
+    static CSFactory& Instance();
 
 private:
-	/** \brief  Tree Handler pointer of the Server .*/
-	HTTPServer * m_server;
-	/** \brief  The listen address of the Server .*/
-	IpAddress m_listen_address;
-	/** \brief  The listen port of the Server .*/
-	unsigned short m_listen_port;
-	/** \brief  The nmaximumu number of threads workers of the Server .*/
-	unsigned short m_max_threads_workers;
+	CSFactory();
+	~CSFactory();
+    static CSFactory m_instance;
+
 };
 
 } // namespace cmop

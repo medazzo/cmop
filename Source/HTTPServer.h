@@ -10,6 +10,7 @@
 #define HTTPRESTSERVER_H_
 
 #include "Neptune.h"
+
 #include "HTTPTree.h"
 #include "HTTPServerTaskData.h"
 #include "HTTPServerTask.h"
@@ -23,7 +24,7 @@ class IHTTP_Handler;
  * \class HTTPServer
  * \brief The server Class .
 */
-class HTTPServer: public NPT_HttpServer, public NPT_Thread {
+class HTTPServer: public NPT_HttpServer, public NPT_Thread, public ICServer {
 public:
 	/**
 	 * \brief   instantiate a server without any handler at port and using max threads workers.
@@ -41,8 +42,12 @@ public:
 	~HTTPServer();
 
 	/**
-	 * \brief  Stop call: used to Stop Server from listen to new clients,
-	 * and all working threads .
+	 * \brief  Start call: used to Start Server
+	 * \return  NPT_SUCCES else Neptune code error .
+	*/
+	Result StartServer();
+	/**
+	 * \brief  Stop call: used to Stop Server from listen to new clients.
 	 * \return  NPT_SUCCES else Neptune code error .
 	*/
 	Result Stop();
@@ -78,7 +83,7 @@ public:
 	 * \brief Set the tree Handler to be used by the server.
 	 * \param  treeHandler the  Tree pointer to be settled.
 	*/
-	void setTreeHandler(HTTPTree* treeHandler);
+	Result setRoot(IHTTPHandler* treeHandler);
 
 private:
 	/**

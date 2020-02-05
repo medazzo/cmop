@@ -12,7 +12,6 @@
 #include "Neptune.h"
 
 #include "HTTPNode.h"
-#include "HTTPUtility.h"
 #include "CMopServer.h"
 
 namespace cmop
@@ -39,7 +38,7 @@ public:
 	/**
 	 * \brief default destructor of the tree
 	*/
-	~HTTPTree();
+	virtual ~HTTPTree();
 
 	/**
 	 * \brief   search segments list on tree
@@ -47,11 +46,11 @@ public:
 	 * \param   found pointer on node , Update it with pointer if found
 	 * \return  True if segment is found and found id updated else False.
 	*/
-	bool FindChildNodeOnTree(NPT_List<NPT_String> Segments, IHTTPHandler* found);
+	bool FindChildNodeOnTree(NPT_List<NPT_String> Segments, HTTPNode* &found);
 
 private:
 	 /** \brief   the node root of the tree */
 	HTTPNode* m_root;
 };
-}
+} /* namespace cmop */
 #endif /* HTTPTREE_H_ */

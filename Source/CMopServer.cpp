@@ -5,56 +5,34 @@
  *  \date 11 juin 2013
  *  \author Azzouni Mohamed
 */
+#include "Neptune.h"
+
 #include "CMopServer.h"
+#include "HTTPUtility.h"
 #include "HTTPServer.h"
 #include "HTTPServerTaskData.h"
 #include "HTTPServerTask.h"
 #include "HTTPTree.h"
-#include "Neptune.h"
+
 
 NPT_SET_LOCAL_LOGGER("cmop.apiserver")
 
 namespace cmop
 {
 
-
-const IpAddress IpAddress::Any = IpAddress();
-const IpAddress IpAddress::Loopback = IpAddress(127, 0, 0, 1);
-
 /*----------------------------------------------------------------------
 |   IpAddress::IpAddress
 +---------------------------------------------------------------------*/
-IpAddress::IpAddress() :
-		m_Address(0)
-{}
+IpAddress IpAddress::Any = IpAddress();
+IpAddress IpAddress::Loopback = IpAddress(127, 0, 0, 1);
 
-/*----------------------------------------------------------------------
-|   IpAddress::IpAddress
-+---------------------------------------------------------------------*/
-IpAddress::IpAddress(unsigned long address) :
-		m_Address(address)
-{}
-
-/*----------------------------------------------------------------------
-|   IpAddress::IpAddress
-+---------------------------------------------------------------------*/
-IpAddress::IpAddress(unsigned char a,
-						   unsigned char b,
-						   unsigned char c,
-						   unsigned char d)
-{
-	m_Address = (((unsigned long)a) << 24) |
-				(((unsigned long)b) << 16) |
-				(((unsigned long)c) << 8) |
-				(((unsigned long)d));
-}
 
 /*----------------------------------------------------------------------
 |   IHTTPHandler::~IHTTPHandler
 +---------------------------------------------------------------------*/
 IHTTPHandler::~IHTTPHandler()
 {
-	NPT_LOG_INFO_1( "## destructing  %s  ", m_segment.GetChars());
+	NPT_LOG_INFO_1( "## destroyer  %s  ", m_segment);
 }
 
 /*----------------------------------------------------------------------
@@ -63,7 +41,7 @@ IHTTPHandler::~IHTTPHandler()
 IHTTPHandler::IHTTPHandler( char *  segment, METHODS   methodsSupportMask) :
     m_methodsSupportMask(methodsSupportMask)
 {
-	memset(m_segment, 0, sizeof(128));
+	memset(m_segment, 0, sizeof(HTTP_MAX_SEGMENT_LENGTH));
 	NPT_CopyMemory(m_segment, segment, strlen(segment));
 	NPT_LOG_INFO_1( "## constructing  %s  ", m_segment);
 }
@@ -74,24 +52,33 @@ char *  IHTTPHandler::getSegment()
 {
 	return m_segment;
 }
-
+/*----------------------------------------------------------------------
+|   IHTTPHandler::getMethods
++---------------------------------------------------------------------*/
+METHODS IHTTPHandler::getMethods()
+{
+	return m_methodsSupportMask;
+}
 /*----------------------------------------------------------------------
 |   IHTTPHandler::IHTTPHandler
 +---------------------------------------------------------------------*/	
-Result IHTTPHandlerImpl::ServeFile(const NPT_HttpRequest &request,
-						const NPT_HttpRequestContext &context, NPT_HttpResponse &response,
-						NPT_String file_path, const char *mime_type)
+Result IHTTPHandler::ServeFile( const NPT_HttpRequest &request,
+								const NPT_HttpRequestContext &context,
+								NPT_HttpResponse &response,
+								const char * _file_path,
+								const char *mime_type)
 {
 	UNUSED(request);
 	UNUSED(context);
 	NPT_InputStreamReference stream;
-	NPT_File file(file_path);
+	NPT_String file_path(_file_path);
+	NPT_File file(_file_path);
 	NPT_FileInfo file_info;
 
 	// prevent hackers from accessing files outside of our root
 	if ((file_path.Find("/..") >= 0) || (file_path.Find("\\..") >= 0) || NPT_FAILED(NPT_File::GetInfo(file_path.GetChars(), &file_info)))
 	{
-		return NPT_ERROR_NO_SUCH_ITEM;
+		return HTTPUtility::MapNPTResult(NPT_ERROR_NO_SUCH_ITEM);
 	}
 
 	/* check for range requests
@@ -123,7 +110,7 @@ Result IHTTPHandlerImpl::ServeFile(const NPT_HttpRequest &request,
 	// open file
 	if (NPT_FAILED(file.Open(NPT_FILE_OPEN_MODE_READ)) || NPT_FAILED(file.GetInputStream(stream)) || stream.IsNull())
 	{
-		return NPT_ERROR_NO_SUCH_ITEM;
+		return HTTPUtility::MapNPTResult(NPT_ERROR_NO_SUCH_ITEM);
 	}
 
 	// set Last-Modified and Cache-Control headers
@@ -139,7 +126,7 @@ Result IHTTPHandlerImpl::ServeFile(const NPT_HttpRequest &request,
 	}
 
 	if (stream.IsNull())
-		return NPT_FAILURE;
+		return  HTTPUtility::MapNPTResult(NPT_FAILURE);
 
 	// set date
 	NPT_TimeStamp now;
@@ -153,7 +140,7 @@ Result IHTTPHandlerImpl::ServeFile(const NPT_HttpRequest &request,
 	if (entity == NULL)
 	{
 		NPT_LOG_FATAL( "Critic : Entity is Null !!");
-		return NPT_FAILURE;
+		return  HTTPUtility::MapNPTResult(NPT_FAILURE);
 	}
 
 	// set the content type
@@ -174,88 +161,103 @@ Result IHTTPHandlerImpl::ServeFile(const NPT_HttpRequest &request,
 		}
 	}
 
-	return NPT_SUCCESS;
+	return  HTTPUtility::MapNPTResult(NPT_SUCCESS);
 }
 /*----------------------------------------------------------------------
 |   IHTTPHandler::IHTTPHandler
 +---------------------------------------------------------------------*/	
-IHTTPHandler::OnCreate(NPT_HttpRequest &request,
+void IHTTPHandler::OnCreate(NPT_HttpRequest &request,
 						  const NPT_HttpRequestContext &context,
 						  NPT_HttpResponse &response)
 {
-	NPT_LOG_INFO_1( "## OnCreate on  %s : Not Implemented ! ", m_segment.GetChars());
+	UNUSED(request);
+	UNUSED(context);
+	UNUSED(response);
+	NPT_LOG_INFO_1( "## OnCreate on  %s : Not Implemented ! ", m_segment);
 }
 
 /*----------------------------------------------------------------------
 |   IHTTPHandler::IHTTPHandler
 +---------------------------------------------------------------------*/	
-IHTTPHandler::OnRead(NPT_HttpRequest &request,
+void IHTTPHandler::OnRead(NPT_HttpRequest &request,
 						const NPT_HttpRequestContext &context,
 						NPT_HttpResponse &response) 
 {
-	NPT_LOG_INFO_1( "## OnRead on  %s : Not Implemented ! ", m_segment.GetChars());
+	UNUSED(request);
+	UNUSED(context);
+	UNUSED(response);
+	NPT_LOG_INFO_1( "## OnRead on  %s : Not Implemented ! ", m_segment);
 }
 
 /*----------------------------------------------------------------------
 |   IHTTPHandler::IHTTPHandler
 +---------------------------------------------------------------------*/	
-IHTTPHandler::OnUpdate(NPT_HttpRequest &request,
+void IHTTPHandler::OnUpdate(NPT_HttpRequest &request,
 						  const NPT_HttpRequestContext &context,
 						  NPT_HttpResponse &response) 
 {
-	NPT_LOG_INFO_1( "## OnUpdate on  %s : Not Implemented ! ", m_segment.GetChars());
+	UNUSED(request);
+	UNUSED(context);
+	UNUSED(response);
+	NPT_LOG_INFO_1( "## OnUpdate on  %s : Not Implemented ! ", m_segment);
 }
 
 
 /*----------------------------------------------------------------------
 |   IHTTPHandler::IHTTPHandler
 +---------------------------------------------------------------------*/	
-IHTTPHandler::OnDelete(NPT_HttpRequest &request,
+void IHTTPHandler::OnDelete(NPT_HttpRequest &request,
 						  const NPT_HttpRequestContext &context,
 						  NPT_HttpResponse &response) 
 {
-	NPT_LOG_INFO_1( "## OnDelete on  %s : Not Implemented ! ", m_segment.GetChars());
+	UNUSED(request);
+	UNUSED(context);
+	UNUSED(response);
+	NPT_LOG_INFO_1( "## OnDelete on  %s : Not Implemented ! ", m_segment);
 }
 
 /*----------------------------------------------------------------------
-|   Server::Server
+|   CSFactory::m_instance
 +---------------------------------------------------------------------*/
-Server::Server(IpAddress listen_address,
-					 unsigned short listen_port, 
-					 unsigned short max_threads_workers) : m_listen_address(listen_address),
-														   m_listen_port(listen_port),
-														   m_max_threads_workers(max_threads_workers)
-{
+CSFactory CSFactory::m_instance=CSFactory();
 
-	m_server = new HTTPServer(NPT_IpAddress(m_listen_address.m_Address),
-							  (NPT_UInt16) m_listen_port,
-							  (NPT_UInt16) m_max_threads_workers);
+/*----------------------------------------------------------------------
+|   CSFactory::getCServer
++---------------------------------------------------------------------*/
+ICServer * CSFactory::getCServer(IpAddress listen_address,
+			   unsigned short listen_port,
+			   unsigned short max_threads_workers)
+{
+	HTTPServer * srv = new HTTPServer(NPT_IpAddress(listen_address.m_Address),
+								  (NPT_UInt16) listen_port,
+								  (NPT_UInt16) max_threads_workers);
 	NPT_LOG_INFO("Server Created ");
+	// todo ; need to save it in array ?
+	return srv;
 }
 
 /*----------------------------------------------------------------------
-|   Server::~Server
+|   CSFactory::CSFactory
 +---------------------------------------------------------------------*/
-Server::~Server()
+CSFactory::CSFactory()
 {
-	m_server->Stop();
-	delete m_server;
-	NPT_LOG_INFO("Server Stopped and deleted ");
+	NPT_LOG_INFO("CSFactory Created ");
 }
 
 /*----------------------------------------------------------------------
-|   Server::Stop
+|   CSFactory::~CSFactory
 +---------------------------------------------------------------------*/
-Result Server::Stop()
+CSFactory::~CSFactory()
 {
-	return m_server->Stop();
+	NPT_LOG_INFO("CSFactory destroyed ");
 }
 
 /*----------------------------------------------------------------------
-|   Server::setRoot
+|   CSFactory::Instance
 +---------------------------------------------------------------------*/
-void Server::setRoot( IHTTPHandler * treeHandler)
+CSFactory& CSFactory::Instance()
 {
-	m_server->setTreeHandler( new HTTPTree(treeHandler));
+    return m_instance;
 }
+
 }

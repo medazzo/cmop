@@ -9,17 +9,17 @@
 #ifndef HTTPPFSTASK_H_
 #define HTTPPFSTASK_H_
 
-#include "HTTPUtility.h"
 #include "HTTPServerTaskData.h"
-#include "HTTPServer.h"
+
 
 namespace cmop
 {
+class HTTPServer; // forward declaration to avoid circular dep
 /**
  * \class HTTPServerTask
  * \brief The server worker thread task .
 */
-class HTTPServerTask: public ::NPT_Thread {
+class HTTPServerTask: public NPT_Thread {
 public:
 	/**
 	 * \brief   instantiate a server task thread worker.
@@ -33,7 +33,7 @@ public:
 			::NPT_HttpRequestContext* context,
 			HTTPServer *server);
 	/**
-	 * \brief default destructor
+	 * \brief default destroyer
 	*/
 	~HTTPServerTask();
 

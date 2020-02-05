@@ -10,7 +10,7 @@
 #define HTTPTASKDATA_H_
 
 #include "Neptune.h"
-#include "HTTPUtility.h"
+
 namespace cmop
 {
 /**

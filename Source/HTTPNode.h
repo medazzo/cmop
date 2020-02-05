@@ -10,6 +10,7 @@
 #define HTTPNODE_H_
 
 #include "Neptune.h"
+
 #include "CMopServer.h"
 
 namespace cmop
@@ -17,9 +18,9 @@ namespace cmop
 
 /**
  * \class HTTPNode
- * \brief The composant of the tree .
+ * \brief The handlers tree .
 */
-class  HTTPNode /*: public NPT_HttpRequestHandler*/
+class  HTTPNode : public NPT_HttpRequestHandler
 {
 public:
 	/**
@@ -92,7 +93,7 @@ public:
 	 * \brief   get the node content pointer type of IHTTP_Handler
 	 * \return  pointer to the content of this node
 	*/
-	IHTTPHandler* getNode();
+	IHTTPHandler* getNodeHandler();
 
 	/**
 	 * \brief  used to set the Response : see  NPT_HttpRequestHandler::SetupResponse
@@ -108,10 +109,8 @@ public:
 public:
 	/** \brief   pointer to the content of the node type of IHTTP_Handler*/
 	IHTTPHandler *m_node;
-	/** \brief   lits of pointer of children of this node. */
+	/** \brief   list of pointer of children of this node. */
 	::NPT_List<HTTPNode *> *m_childrens;
 };
-
-
 }
 #endif /* HTTPNODE_H_ */

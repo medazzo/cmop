@@ -3,3 +3,4 @@ Build/Targets/*/Debug/*
 ThirdParty/Neptune
 .settings/*
 ThirdParty/Neptune/*
+/Debug/

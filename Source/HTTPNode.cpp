@@ -6,11 +6,10 @@
  *  \author Azzouni Mohamed
 */
 
-#include "HTTPUtility.h"
-#include "HTTPNode.h"
-
 #include "Neptune.h"
 
+#include "HTTPNode.h"
+#include "HTTPUtility.h"
 NPT_SET_LOCAL_LOGGER("cmop.server.node")
 namespace cmop
 {
@@ -66,7 +65,11 @@ bool HTTPNode::operator==(const HTTPNode &other)
 +---------------------------------------------------------------------*/
 bool HTTPNode::operator==(const HTTPNode *other)
 {
-	return (NPT_String(m_node->getSegment()).Compare(other->getNode()->getSegment()) == 0 ) ? true : false;
+	if (other== NULL || other->m_node == NULL)
+		return false ;
+	IHTTPHandler* hd = other->m_node;
+	const char* oth = (const char*)hd->getSegment();
+	return (NPT_String(m_node->getSegment()).Compare(oth, false) == 0 ) ? true : false;
 }
 
 /*----------------------------------------------------------------------
@@ -114,28 +117,28 @@ NPT_Cardinal HTTPNode::getChildCount()
 /*----------------------------------------------------------------------
 |   HTTPNode::SetupResponse
 +---------------------------------------------------------------------*/
-NPT_Result HTTPNode::SetupResponse(NPT_HttpRequest&              request,
-                         const NPT_HttpRequestContext& context,
-                         NPT_HttpResponse&             response)
+NPT_Result HTTPNode::SetupResponse(::NPT_HttpRequest&              request,
+                         const ::NPT_HttpRequestContext& context,
+                         ::NPT_HttpResponse&             response)
 {
-	if ((request.GetMethod().Compare(NPT_HTTP_METHOD_GET) == 0) && check_support(m_methodsSupportMask, SUPPORT_GET))
+	if ((request.GetMethod().Compare(NPT_HTTP_METHOD_GET) == 0) && HTTPUtility::check_support(this->m_node->getMethods(), SUPPORT_GET))
 	{
-		OnRead(request, context, response);
+		this->m_node->OnRead(request, context, response);
 		return NPT_SUCCESS;
 	}
-	else if ((request.GetMethod().Compare(NPT_HTTP_METHOD_POST) == 0) && check_support(m_methodsSupportMask, SUPPORT_POST))
+	else if ((request.GetMethod().Compare(NPT_HTTP_METHOD_POST) == 0) && HTTPUtility::check_support(this->m_node->getMethods(), SUPPORT_POST))
 	{
-		OnUpdate(request, context, response);
+		this->m_node->OnUpdate(request, context, response);
 		return NPT_SUCCESS;
 	}
-	else if ((request.GetMethod().Compare(NPT_HTTP_METHOD_PUT) == 0) && check_support(m_methodsSupportMask, SUPPORT_PUT))
+	else if ((request.GetMethod().Compare(NPT_HTTP_METHOD_PUT) == 0) && HTTPUtility::check_support(this->m_node->getMethods(), SUPPORT_PUT))
 	{
-		OnCreate(request, context, response);
+		this->m_node->OnCreate(request, context, response);
 		return NPT_SUCCESS;
 	}
-	else if ((request.GetMethod().Compare(NPT_HTTP_METHOD_DELETE) == 0) && check_support(m_methodsSupportMask, SUPPORT_DELETE))
+	else if ((request.GetMethod().Compare(NPT_HTTP_METHOD_DELETE) == 0) && HTTPUtility::check_support(this->m_node->getMethods(), SUPPORT_DELETE))
 	{
-		OnDelete(request, context, response);
+		this->m_node->OnDelete(request, context, response);
 		return NPT_SUCCESS;
 	}
 	else
@@ -168,7 +171,7 @@ bool HTTPNode::FindSegmentChildNode(NPT_String segment,
 /*----------------------------------------------------------------------
 |   IHTTPHandler::getNode
 +---------------------------------------------------------------------*/
-IHTTPHandler * HTTPNode::getNode()
+IHTTPHandler * HTTPNode::getNodeHandler()
 {
 	return m_node;
 }

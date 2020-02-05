@@ -41,7 +41,7 @@ HTTPNode * HTTPTree::getRoot()
 /*----------------------------------------------------------------------
 |   HTTPTree::FindChildNodeOnTree
 +---------------------------------------------------------------------*/
-bool HTTPTree::FindChildNodeOnTree(NPT_List<NPT_String> Segments,IHTTPHandler* found )
+bool HTTPTree::FindChildNodeOnTree(NPT_List<NPT_String> Segments,HTTPNode* &found )
 {
 	NPT_LOG_INFO("Fetching on Tree !");
 	HTTPNode *t = m_root;
@@ -53,7 +53,7 @@ bool HTTPTree::FindChildNodeOnTree(NPT_List<NPT_String> Segments,IHTTPHandler* f
 	if (t->operator==(segment))
 	{
 		NPT_LOG_FINE_2( "Fetching on Tree : segment[%d]: '%s'  found >>  on root !", count, segment.GetChars());
-		found = t->m_node;
+		found = t;
 		fd = true;
 		it++;
 	}
@@ -69,12 +69,12 @@ bool HTTPTree::FindChildNodeOnTree(NPT_List<NPT_String> Segments,IHTTPHandler* f
 		segment = *it;
 		NPT_LOG_FINE_2( "Fetching on Tree for segment[%d]: '%s' !", count, segment.GetChars());
 		NPT_LOG_INFO_3("Fetching on Tree : segment[%d]: '%s'  searching on children of '%s' !",
-				  count, segment.GetChars(), t->getNode()->getSegment() );
+				  count, segment.GetChars(), t->getNodeHandler()->getSegment() );
 		fd = t->FindSegmentChildNode(segment, t);
 		if (fd)
 		{
 			NPT_LOG_FINE_2( "Fetching on Tree : segment[%d]: '%s'  found >>  on a children !", count, segment.GetChars());
-			found = t->m_node;
+			found = t;
 			fd = true;
 			it++;
 		}

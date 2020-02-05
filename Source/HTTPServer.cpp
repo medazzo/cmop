@@ -87,8 +87,11 @@ HTTPTree* HTTPServer::getTreeHandler() {
 /*----------------------------------------------------------------------
 |   HTTPServer::setTreeHandler
 +---------------------------------------------------------------------*/
-void HTTPServer::setTreeHandler(HTTPTree* treeHandler) {
-	this->treeHandler = treeHandler;
+Result HTTPServer::setRoot(IHTTPHandler* treeHandler) {
+	if ( this->treeHandler != NULL)
+		delete this->treeHandler;
+	this->treeHandler =  new HTTPTree(treeHandler);
+	return Result::CMOP_SUCCESS;
 }
 
 /*----------------------------------------------------------------------
@@ -119,6 +122,13 @@ void HTTPServer::Run() {
 	} while (isLoop());
 }
 
+/*----------------------------------------------------------------------
+|   HTTPServer::Start
++---------------------------------------------------------------------*/
+Result HTTPServer::StartServer() {
+	// todo
+	return CMOP_SUCCESS;
+}
 /*----------------------------------------------------------------------
 |   HTTPServer::Stop
 +---------------------------------------------------------------------*/
@@ -186,7 +196,7 @@ Result HTTPServer::GetNewClient() {
 	NPT_LOG_FATAL_2( "HAVE A NEW CLIENT !! :WaitForNewClient returned %d (%s)", result,
 			NPT_ResultText(result));
 	if (NPT_FAILED(result))
-		return MapNPTResult(result);
+		return HTTPUtility::MapNPTResult(result);
 
 	{
 		NPT_AutoLock lock(m_TasksLock);
@@ -207,7 +217,7 @@ Result HTTPServer::GetNewClient() {
 		NPT_LOG_WARNING("we cannot Launch a new Task , have to wait");
 	}
 
-	return MapNPTResult(result);
+	return HTTPUtility::MapNPTResult(result);
 }
 
 /*----------------------------------------------------------------------

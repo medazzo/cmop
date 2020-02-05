@@ -6,11 +6,13 @@
  *  \author Azzouni Mohamed
 */
 
-#include "HTTPServerTask.h"
-#include "HTTPUtility.h"
-//#include "IHTTPEventHandler.h"
-
 #include "Neptune.h"
+
+#include "HTTPServerTask.h"
+//#include "IHTTPEventHandler.h"
+#include "HTTPUtility.h"
+#include "HTTPServerTask.h"
+#include "HTTPServer.h"
 NPT_SET_LOCAL_LOGGER("cmop.server.task")
 
 namespace cmop
@@ -36,7 +38,7 @@ HTTPServerTask::HTTPServerTask(	::NPT_InputStreamReference& input,
 |   HTTPServerTask::~HTTPServerTask
 +---------------------------------------------------------------------*/
 HTTPServerTask::~HTTPServerTask() {
-	NPT_LOG_INFO( "## destructor  ");
+	NPT_LOG_INFO( "## destroyer  ");
 	this->Stop();
 	delete m_status;
 }
@@ -136,7 +138,7 @@ NPT_Result HTTPServerTask::RespondToClient() {
 	NPT_Result result = NPT_ERROR_NO_SUCH_ITEM;
 	bool resultsearch = false;
 	bool terminate_server = false;
-	IHTTPHandler* found = NULL;
+	HTTPNode* found = NULL;
 
 	NPT_HttpResponder responder(m_input, m_output);
 	result = responder.ParseRequest(request, &m_context->GetLocalAddress());
@@ -159,7 +161,7 @@ NPT_Result HTTPServerTask::RespondToClient() {
 	body->SetContentType("text/html");
 
    // augment the headers with server information
-	response->GetHeaders().SetHeader(NPT_HTTP_HEADER_SERVER, HTTP_SERVER_NAME_VERSION_NUMBER, false);
+	response->GetHeaders().SetHeader(NPT_HTTP_HEADER_SERVER, HTTPUtility::HTTP_SERVER_NAME_VERSION_NUMBER, false);
 
 	//Calculate demanded PATH
 	NPT_List<NPT_String> path;
@@ -177,19 +179,20 @@ NPT_Result HTTPServerTask::RespondToClient() {
 
 	if (found) {
 		NPT_LOG_INFO("We Found the handle , will trait-it !");
-		if(found->GetMyHandlerType() == HANDLER_EVENT /*TODO add check for method support*/)
+		if(found->getNodeHandler()->GetMyHandlerType() == HANDLER_EVENT /*TODO add check for method support*/)
 		{
 			NPT_LOG_INFO(">> THE HANDLER IS AN EVENTING ONE .");
-			IHTTPEventHandler * event= (IHTTPEventHandler*) found;
+			// todo deal with event handler
+			/*IHTTPEventHandler * event= (IHTTPEventHandler*) found;
 			if (event->PushWaitingclient(m_input,m_output,m_context,request) == NPT_SUCCESS)
-			{
-				NPT_LOG_INFO_1( ">> Event Are Armed , user will wait @@ %p ..",m_input.AsPointer());
+			{*/
+				NPT_LOG_INFO_1( ">> Event Are Armed , user will wait @@ %p ..",(void*)m_input.AsPointer());
 				goto endEventing;
-			}
+			/*}
 			else
 			{
 				NPT_LOG_INFO(">> No Event Are Armed , user will get Response Immediately");
-			}
+			}*/
 		}
 
 		// ask the handler to setup the response
@@ -200,7 +203,7 @@ NPT_Result HTTPServerTask::RespondToClient() {
 	}
 
 	if ((result == NPT_ERROR_NO_SUCH_ITEM)|| (found == NULL)|| (resultsearch == false)){
-		body->SetInputStream(NPT_HTTP_DEFAULT_404_HTML);
+		body->SetInputStream(HTTPUtility::HTTP_DEFAULT_404_HTML);
 		body->SetContentType("text/html");
 		response->SetStatus(404, "Not Found");
 		//response->SetEntity(body);
@@ -209,7 +212,7 @@ NPT_Result HTTPServerTask::RespondToClient() {
 	else if (result == NPT_ERROR_PERMISSION_DENIED)
 	{
 
-		body->SetInputStream(NPT_HTTP_DEFAULT_403_HTML);
+		body->SetInputStream(HTTPUtility::HTTP_DEFAULT_403_HTML);
 		body->SetContentType("text/html");
 		response->SetStatus(402, "Not supported");
 		NPT_LOG_FATAL("NPT_ERROR_PERMISSION_DENIED ");
@@ -221,7 +224,7 @@ NPT_Result HTTPServerTask::RespondToClient() {
 	}
 	else if (NPT_FAILED(result))
 	{
-		body->SetInputStream(NPT_HTTP_DEFAULT_500_HTML);
+		body->SetInputStream(HTTPUtility::HTTP_DEFAULT_500_HTML);
 		body->SetContentType("text/html");
 		response->SetStatus(500, "Internal Error");
 		NPT_LOG_FATAL("NPT_ERROR_TERMINATED ");
