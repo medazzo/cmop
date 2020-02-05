@@ -1,0 +1,12 @@
+language: cpp
+sudo: required
+dist: bionic
+compiler:
+- Scons
+os:
+- linux
+script:
+    - git submodule update --init
+    - scons target='x86-unknow-linux' build_config='Debug'
+    - scons target='x86-unknow-linux' build_config='Release'
+

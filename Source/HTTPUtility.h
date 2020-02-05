@@ -14,7 +14,6 @@
 
 namespace cmop {
 
-
 #define UNUSED(x)	 (void)(x)
 
 /**
@@ -23,31 +22,31 @@ namespace cmop {
  */
 class HTTPUtility {
 
-public:
-	HTTPUtility();
-	virtual ~HTTPUtility();
-	/*----------------------------------------------------------------------
-	 |   constants
-	 +---------------------------------------------------------------------*/
-	/*!< define default MAX Thread Workers  */
-	static const int HTTP_DEFAULT_MAX_THREADS_WORKERS;
-	/*!< define default HTTP Serve Port     */
-	static const int  HTTP_SERVER_PORT_NUMBER;
-	/*!< define HTTP Server Version visible in Headers Response*/
-	static const char * HTTP_SERVER_NAME_VERSION_NUMBER;
-	/*!< define HTTP Server Name visible in Headers Response*/
-	static const char * APP_SERVER_NAME;
-	/*!< default HTTPServer response  in  case of 403 Error  */
-	static const char * HTTP_DEFAULT_403_HTML;
-	/*!< default HTTPServer response  in  case of 404 Error  */
-	static const char * HTTP_DEFAULT_404_HTML;
-	/*!< default HTTPServer response  in  case of 500 Error  */
-	static const char * HTTP_DEFAULT_500_HTML;
+ public:
+  HTTPUtility();
+  virtual ~HTTPUtility();
+  /*----------------------------------------------------------------------
+   |   constants
+   +---------------------------------------------------------------------*/
+  /*!< define default MAX Thread Workers  */
+  static const int HTTP_DEFAULT_MAX_THREADS_WORKERS;
+  /*!< define default HTTP Serve Port     */
+  static const int HTTP_SERVER_PORT_NUMBER;
+  /*!< define HTTP Server Version visible in Headers Response*/
+  static const char *HTTP_SERVER_NAME_VERSION_NUMBER;
+  /*!< define HTTP Server Name visible in Headers Response*/
+  static const char *APP_SERVER_NAME;
+  /*!< default HTTPServer response  in  case of 403 Error  */
+  static const char *HTTP_DEFAULT_403_HTML;
+  /*!< default HTTPServer response  in  case of 404 Error  */
+  static const char *HTTP_DEFAULT_404_HTML;
+  /*!< default HTTPServer response  in  case of 500 Error  */
+  static const char *HTTP_DEFAULT_500_HTML;
 
-	static inline bool  check_support(int mask, int flag){
-		return (((mask & flag) == flag) ? true : false );
-	}
-	static Result MapNPTResult(NPT_Result result) ;
+  static inline bool check_support(int mask, int flag) {
+    return (((mask & flag) == flag) ? true : false);
+  }
+  static Result MapNPTResult(NPT_Result result);
 };
 }
 #endif /* UTILITY_H_ */
