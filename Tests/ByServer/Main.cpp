@@ -18,18 +18,17 @@
 #include <sys/poll.h>
 
 
-#include "Neptune.h"
-
-#include "CMopServer.h"
+#include "Neptune.h" // just for logging
+#include "HTTPServerTestHandlers.h"
 
 NPT_SET_LOCAL_LOGGER("test.server.main")
-static EventingHandler *	eventing = NULL;
+//static EventingHandler *	eventing = NULL;
 /*----------------------------------------------------------------------
 |   signal CBX
 +---------------------------------------------------------------------*/
 static int STATE = 0;
 static void sig_term(int sig) {
-	UNUSED(sig);
+	Test_UNUSED(sig);
 	STATE = 0;
 	NPT_LOG_INFO_1("we have received a SIG TERM :%d!!",STATE);
 	NPT_LOG_INFO("put a choice:\n 1 :To Send Event.\n 2: To re-arm for events.\n 3:: To exit.\n " );
@@ -39,42 +38,39 @@ static void sig_term(int sig) {
 |   main
 +---------------------------------------------------------------------*/
 
-void SetAsterisk(CMOPServer * server){
+void SetAsterisk(cmop::ICServer * server){
 	RootHandler * root = new RootHandler("root");
 	OnReadHandler *	security = new OnReadHandler("security");
 	AstrixHandler * astrix = new AstrixHandler();
 	ErrorHandler *	error = new ErrorHandler("error");
-	HTTPTree * tree = new HTTPTree(root);
-
 	/*
-	 *        Testing tree :
 	 *                     root
 	 *                    /   |
 	 *           security      *
 	 *                          \
 	 *                         error
 	 */
-	tree->getRoot()->AddChildNode(astrix)->AddChildNode(error);
+	root->AddChildNode(astrix)->AddChildNode(error);
 	tree->getRoot()->AddChildNode(security);
 	/* Setting Server Tree and starting  */
-	server->setTreeHandler(tree);
+	server->setRoot(root);
 }
-void SetTT(CMOPServer * server){
+void SetTT(cmop::ICServer * server){
 	RootHandler * root = new RootHandler("root");
 	OnReadHandler *	security = new OnReadHandler("security");
 	ErrorHandler *	error = new ErrorHandler("error");
-	HTTPTree * tree = new HTTPTree(root);
-	HTTPTree::HTTPNode  * sec = tree->getRoot()->AddChildNode(security);
-	HTTPTree::HTTPNode  * err = sec->AddChildNode(error);
-	err->AddChildNode(security);
+	/*
+	 *    root ->security -> error -> security
+	 */
+	root->AddChildNode(security)->AddChildNode(error)->AddChildNode(security);
 	/* Setting Server Tree and starting  */
-	server->setTreeHandler(tree);
+	server->setRoot(root);
 }
 int
 main(int  argc, char**  argv )
 {
-	UNUSED(argc);
-	UNUSED(argv);
+	Test_UNUSED(argc);
+	Test_UNUSED(argv);
 	sigset_t sig_blocked;
 	struct timeval sel_timeout;
 	fd_set read_set;
@@ -96,11 +92,16 @@ main(int  argc, char**  argv )
 	signal(SIGTERM,sig_term);
 
 
-	CMOPServer * server = new CMOPServer(CMOPIpAddress::Any,1234,1);
+	cmop::ICServer * server = cmop::CSFactory::Instance().getCServer(cmop::IpAddress::Any, 1234 , 3);
+	cmop::ICServer * server2 = cmop::CSFactory::Instance().getCServer(cmop::IpAddress::Any, 7777 , 3);
+
 	SetAsterisk(server);
-//	SetTT(server);
-	server->Start();
+	SetTT(server2);
+
+	server->StartServer();
 	NPT_LOG_INFO("Server Started !");
+	server2->StartServer();
+	NPT_LOG_INFO("Server 2 Started !");
 
 	for(;;)
 	{
@@ -115,17 +116,18 @@ main(int  argc, char**  argv )
         if(STATE == 1)
         {
         	NPT_LOG_INFO("W'll send an Event . " );
-        	eventing->NotifyWaitingClients();
+        	//eventing->NotifyWaitingClients();
         }
         else if (STATE == 2){
         	NPT_LOG_INFO("Arming for new  Event . " );
-    		eventing->ArmEventToBlockNewClients();
+    		//eventing->ArmEventToBlockNewClients();
 
         }
         else if(STATE == 3)
         {
         	NPT_LOG_INFO("W'll exit . " );
 			server->Stop();
+			server2->Stop();
 			delete server;
 			return 0;
 
@@ -133,6 +135,8 @@ main(int  argc, char**  argv )
         else{}
         STATE = 0;
 	}
+	delete server;
+	delete server2;
 }
 
 /** @} */

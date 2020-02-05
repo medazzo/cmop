@@ -35,7 +35,7 @@ SUPPORT_ALL     = SUPPORT_PUT|SUPPORT_GET|SUPPORT_POST|SUPPORT_DELETE	/*!< suppo
  * \brief Contains the Value of theHandlers Types : Static , Eventing or Asterisk .
 */
 typedef enum  {
-HADNLER_STATIC 		= 0x0,  	/*!< define Static Handler */
+HANDLER_STATIC 		= 0x0,  	/*!< define Static Handler */
 HANDLER_EVENT  		= 0x1000,   /*!< define the Events Handler. */
 HANDLER_ASTERISK   	= 0x0100 	/*!< define the Asterisk Handler. */
 }HANDLERSTYPES;
@@ -93,6 +93,12 @@ public:
 	*/
 	IHTTPHandler(    char * segment,
                      METHODS methodsSupportMask = SUPPORT_NONE);
+	/**
+	 * \brief   instantiate a static HTTP Handler.
+	 * \param   segment : The String segment responsible for this handler .
+	 * \param   methodsSupportMask The mask containing supported Http Method
+	*/
+	IHTTPHandler(METHODS methodsSupportMask = SUPPORT_NONE);
 	/**
 	 * \brief   Get the Handler Type.
 	 * \return  the Handler Type :HANDLER_ASTERISK.
@@ -188,6 +194,7 @@ protected:
 */
 class ICServer
 {
+public:
 	/**
 	 * \brief   Start a server
 	*/

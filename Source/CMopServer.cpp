@@ -45,6 +45,16 @@ IHTTPHandler::IHTTPHandler( char *  segment, METHODS   methodsSupportMask) :
 	NPT_CopyMemory(m_segment, segment, strlen(segment));
 	NPT_LOG_INFO_1( "## constructing  %s  ", m_segment);
 }
+
+/*----------------------------------------------------------------------
+|   IHTTPHandler::IHTTPHandler
++---------------------------------------------------------------------*/
+IHTTPHandler::IHTTPHandler(METHODS   methodsSupportMask) :
+    m_methodsSupportMask(methodsSupportMask)
+{
+	memset(m_segment, 0, sizeof(HTTP_MAX_SEGMENT_LENGTH));
+	NPT_LOG_INFO_1( "## constructing  %s  ", m_segment);
+}
 /*----------------------------------------------------------------------
 |   IHTTPHandler::getSegment
 +---------------------------------------------------------------------*/
