@@ -1,10 +1,11 @@
 language: cpp
-sudo: required
 dist: bionic
 compiler:
 - Scons
 os:
 - linux
+before_install:
+  - sudo apt-get -y install scons
 script:
     - git submodule update --init
     - scons target='x86-unknow-linux' build_config='Debug'
