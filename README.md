@@ -1,7 +1,7 @@
 
 # CMOP 
 
-[![Build Status](https://travis-ci.org/medazzo/sbr-generator.svg?branch=master)](https://travis-ci.org/medazzo/sbr-generator)
+[![Build Status](https://travis-ci.org/medazzo/cmop.svg?branch=master)](https://travis-ci.org/medazzo/cmop)
 
 A Http REst Server basend on LibNptune C++
 
